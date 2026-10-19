@@ -5,14 +5,14 @@ import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static org.folio.rest.converter.resources.ResourceConverterUtils.createEmptyRelationship;
 
 import java.util.List;
-import org.folio.holdingsiq.model.CustomerResources;
-import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.Resource;
 import org.folio.repository.accesstypes.DbAccessType;
 import org.folio.repository.tag.DbTag;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rmapi.result.TitleResult;
+import org.folio.rest.util.IdParser;
+import org.folio.rmapi.result.ResourceItemResult;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -21,46 +21,45 @@ public final class ResourceCollectionItemConverters {
   private ResourceCollectionItemConverters() { }
 
   @Component
-  public static class FromTitle implements Converter<Title, ResourceCollectionItem> {
+  public static class FromResource implements Converter<Resource, ResourceCollectionItem> {
 
     private final CommonResourceConverter commonResourceConverter;
 
-    public FromTitle(CommonResourceConverter commonResourceConverter) {
+    public FromResource(CommonResourceConverter commonResourceConverter) {
       this.commonResourceConverter = commonResourceConverter;
     }
 
     @Override
-    public ResourceCollectionItem convert(Title title) {
-      CustomerResources resource = title.getCustomerResourcesList().getFirst();
+    public ResourceCollectionItem convert(Resource resource) {
       return new ResourceCollectionItem()
-        .withId(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId())
+        .withId(IdParser.getResourceId(resource))
         .withType(ResourceCollectionItem.Type.RESOURCES)
         .withRelationships(createEmptyRelationship())
-        .withAttributes(commonResourceConverter.createResourceDataAttributes(title, resource));
+        .withAttributes(commonResourceConverter.createResourceDataAttributes(resource));
     }
   }
 
   @Component
-  public static class FromTitleResult implements Converter<TitleResult, ResourceCollectionItem> {
+  public static class FromResourceItemResult implements Converter<ResourceItemResult, ResourceCollectionItem> {
 
-    private final Converter<Title, ResourceCollectionItem> titleConverter;
+    private final Converter<Resource, ResourceCollectionItem> resourceConverter;
     private final Converter<List<DbTag>, Tags> tagsConverter;
     private final Converter<DbAccessType, AccessType> accessTypeConverter;
 
-    public FromTitleResult(Converter<Title, ResourceCollectionItem> titleConverter,
-                           Converter<List<DbTag>, Tags> tagsConverter,
-                           Converter<DbAccessType, AccessType> accessTypeConverter) {
-      this.titleConverter = titleConverter;
+    public FromResourceItemResult(Converter<Resource, ResourceCollectionItem> resourceConverter,
+                                  Converter<List<DbTag>, Tags> tagsConverter,
+                                  Converter<DbAccessType, AccessType> accessTypeConverter) {
+      this.resourceConverter = resourceConverter;
       this.tagsConverter = tagsConverter;
       this.accessTypeConverter = accessTypeConverter;
     }
 
     @Override
-    public ResourceCollectionItem convert(TitleResult titleResult) {
-      ResourceCollectionItem result = requireNonNull(titleConverter.convert(titleResult.getTitle()));
-      result.getAttributes().setTags(tagsConverter.convert(emptyIfNull(titleResult.getResourceTagList())));
-      if (titleResult.getResourceAccessType() != null) {
-        result.getIncluded().add(accessTypeConverter.convert(titleResult.getResourceAccessType()));
+    public ResourceCollectionItem convert(ResourceItemResult itemResult) {
+      ResourceCollectionItem result = requireNonNull(resourceConverter.convert(itemResult.getResource()));
+      result.getAttributes().setTags(tagsConverter.convert(emptyIfNull(itemResult.getTagList())));
+      if (itemResult.getAccessType() != null) {
+        result.getIncluded().add(accessTypeConverter.convert(itemResult.getAccessType()));
       }
       return result;
     }

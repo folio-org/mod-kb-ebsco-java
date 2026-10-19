@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Related Title Schema",
+  "description": "Title referenced by a title relationship",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.RelatedTitle",
+  "additionalProperties": false,
+  "properties": {
+    "titleId": {
+      "type": "integer",
+      "description": "Title id",
+      "example": 4444
+    },
+    "name": {
+      "type": "string",
+      "description": "Title name",
+      "example": "A Tale of Two Cities (continued)"
+    }
+  }
+}

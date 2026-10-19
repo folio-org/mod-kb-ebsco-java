@@ -55,7 +55,10 @@
         "embargoValue": 7
       },
       "isPackageCustom": false,
+      "packageType": "Variable",
+      "isPrimaryPackage": false,
       "isSelected": true,
+      "isOrderedThroughEbsco": false,
       "isTokenNeeded": true,
       "locationId": 17545807,
       "managedEmbargoPeriod": {
@@ -71,6 +74,23 @@
         "isHidden": true,
         "reason": ""
       },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": true,
+          "reason": ""
+        },
+        {
+          "category": "FTF",
+          "hidden": true,
+          "reason": ""
+        },
+        {
+          "category": "MARC",
+          "hidden": true,
+          "reason": ""
+        }
+      ],
       "managedCoverages": [
         {
           "beginCoverage": "2010-01-01",

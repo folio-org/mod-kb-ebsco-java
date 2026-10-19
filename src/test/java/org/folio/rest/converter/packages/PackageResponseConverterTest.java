@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.folio.holdingsiq.model.Title;
 import org.folio.rest.jaxrs.model.Resource;
+import org.folio.rmapi.ResourceMapper;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.spring.config.TestConfig;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,8 @@ class PackageResponseConverterTest {
   void shouldReturnCustomCoverageInDescendingOrder() {
     var title = readJsonFile("responses/rmapi/titles/get-custom-title-with-coverage-dates-asc.json", Title.class);
 
-    var resourceResult = new ResourceResult(title, null, null, false);
+    var rmapiResource = ResourceMapper.toResource(title, title.getCustomerResourcesList().getFirst());
+    var resourceResult = new ResourceResult(rmapiResource, null, null, false);
     var resource = conversionService.convert(resourceResult, Resource.class);
     assertNotNull(resource);
 

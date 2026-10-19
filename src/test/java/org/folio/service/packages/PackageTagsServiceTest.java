@@ -23,7 +23,7 @@ import org.folio.repository.tag.TagRepository;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.PackageTagsDataAttributes;
 import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rmapi.result.TitleResult;
+import org.folio.rmapi.result.ResourceItemResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -108,14 +108,14 @@ class PackageTagsServiceTest {
 
   @Test
   void shouldPopulateResourceTagsFromTagRepository() {
-    var titleResult = new TitleResult(null, false);
-    var resourceIdToTitle = Map.of("resource-1", titleResult);
+    var itemResult = new ResourceItemResult(null);
+    var resourceIdToItem = Map.of("resource-1", itemResult);
     var tags = List.of(DbTag.builder().value("tag1").recordType(RecordType.RESOURCE).build());
     when(tagRepository.findPerRecord(TENANT, List.of("resource-1"), RecordType.RESOURCE))
       .thenReturn(CompletableFuture.completedFuture(Map.of("resource-1", tags)));
 
-    result(packageTagsService.loadResourceTags(TENANT, resourceIdToTitle));
+    result(packageTagsService.loadResourceTags(TENANT, resourceIdToItem));
 
-    assertEquals(tags, titleResult.getResourceTagList());
+    assertEquals(tags, itemResult.getTagList());
   }
 }

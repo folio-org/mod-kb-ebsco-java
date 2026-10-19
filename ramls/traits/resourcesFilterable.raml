@@ -12,6 +12,14 @@ queryParameters:
        Filter to narrow down results based on content type. 
        Possible values are all, audiobook, book, bookseries, database, journal, newsletter, newspaper, proceedings, report, streamingaudio, streamingvideo,thesisdissertation, website, unspecified.
     required: false
+  filter[access]:
+    displayName: Package access
+    type: string
+    description: |
+      Limits the results based on Package Free Access.
+      Possible values: public, controlled
+    example: public
+    required: false
   filter[name]:
     displayName: Query by Title Name
     type: string

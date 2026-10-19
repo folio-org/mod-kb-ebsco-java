@@ -1,5 +1,5 @@
 {
-  "titleId": 1108525,
+  "kbid": 1108525,
   "titleName": "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
   "publisherName": "Praeger",
   "identifiersList": [
@@ -19,7 +19,7 @@
   "subjectsList": [
     {
       "type": "BISAC",
-      "subject": "SOCIAL SCIENCE \/ Ethnic Studies \/ General"
+      "subject": "SOCIAL SCIENCE / Ethnic Studies / General"
     }
   ],
   "alternateTitleList": [
@@ -32,8 +32,8 @@
   "pubType": "Book",
   "customerResourcesList": [
     {
-      "titleId": 1108525,
-      "packageId": 3964,
+      "kbid": 1108525,
+      "listId": 3964,
       "packageName": "EBSCO eBooks",
       "packageType": "Selectable",
       "proxy": {
@@ -46,19 +46,13 @@
       "locationId": 3464602,
       "isSelected": true,
       "isTokenNeeded": false,
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
       "managedCoverageList": [
         {
           "beginCoverage": "1996-01-01",
           "endCoverage": "1996-12-31"
         }
       ],
-      "customCoverageList": [
-
-      ],
+      "customCoverageList": [],
       "coverageStatement": null,
       "managedEmbargoPeriod": {
         "embargoUnit": null,
@@ -68,16 +62,33 @@
         "embargoUnit": null,
         "embargoValue": 0
       },
-      "url": "http:\/\/search.ebscohost.com\/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=38624",
+      "url": "http://search.ebscohost.com/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=38624",
       "userDefinedField1": "test 1",
       "userDefinedField2": "test 2",
       "userDefinedField3": "",
       "userDefinedField4": null,
-      "userDefinedField5": "test 5"
+      "userDefinedField5": "test 5",
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "FTF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "MARC",
+          "hidden": false,
+          "reason": ""
+        }
+      ]
     },
     {
-      "titleId": 1108525,
-      "packageId": 18,
+      "kbid": 1108525,
+      "listId": 18,
       "packageName": "Other package",
       "packageType": "Selectable",
       "proxy": {
@@ -89,19 +100,13 @@
       "vendorName": "BestVendor",
       "isSelected": true,
       "isTokenNeeded": false,
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
       "managedCoverageList": [
         {
           "beginCoverage": "1996-01-01",
           "endCoverage": "1996-12-31"
         }
       ],
-      "customCoverageList": [
-
-      ],
+      "customCoverageList": [],
       "coverageStatement": null,
       "managedEmbargoPeriod": {
         "embargoUnit": null,
@@ -115,7 +120,24 @@
       "userDefinedField2": "test 2",
       "userDefinedField3": "",
       "userDefinedField4": null,
-      "userDefinedField5": "test 5"
+      "userDefinedField5": "test 5",
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "FTF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "MARC",
+          "hidden": false,
+          "reason": ""
+        }
+      ]
     }
   ],
   "description": null,

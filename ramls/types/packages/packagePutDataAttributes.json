@@ -87,7 +87,7 @@
     "visibility": {
       "description": "Visibility details",
       "items": {
-        "$ref": "packageVisibility.json",
+        "$ref": "../visibility.json",
         "type": "object"
       },
       "type": "array"

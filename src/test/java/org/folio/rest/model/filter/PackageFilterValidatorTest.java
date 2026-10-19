@@ -40,4 +40,11 @@ class PackageFilterValidatorTest {
   void shouldAcceptMissingVisibilityFilter() {
     assertThatCode(() -> PackageRecordFilter.builder().sort("name").build()).doesNotThrowAnyException();
   }
+
+  @Test
+  void shouldRejectBlankQuery() {
+    var builder = PackageRecordFilter.builder().sort("name").query("   ");
+
+    assertThatThrownBy(builder::build).isInstanceOf(QueryParamsValidationException.class);
+  }
 }

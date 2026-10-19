@@ -7,6 +7,7 @@ import static org.folio.util.TestUtil.readFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
@@ -16,10 +17,12 @@ import java.util.List;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.Resource;
 import org.folio.holdingsiq.model.Title;
 import org.folio.rmapi.cache.TitleCacheKey;
 import org.folio.util.WireMockTestBase;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class TitleServiceImplTest extends WireMockTestBase {
 
@@ -64,10 +67,13 @@ class TitleServiceImplTest extends WireMockTestBase {
 
     when(titleCache.getValue(any(TitleCacheKey.class))).thenReturn(buildTitleWithCustomerResource(1));
 
-    var title = buildTitleWithCustomerResource(2);
-    service.updateCache(title);
+    service.updateCache(Resource.builder().titleId(TITLE_ID).packageId(2).build());
 
-    assertEquals(2, title.getCustomerResourcesList().size());
+    var cachedTitle = ArgumentCaptor.forClass(Title.class);
+    verify(titleCache).putValue(any(TitleCacheKey.class), cachedTitle.capture());
+    assertEquals(List.of(2, 1), cachedTitle.getValue().getCustomerResourcesList().stream()
+      .map(CustomerResources::getPackageId)
+      .toList());
   }
 
   private Title buildTitleWithCustomerResource(int packageId) {

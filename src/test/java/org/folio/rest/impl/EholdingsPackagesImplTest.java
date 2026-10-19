@@ -282,7 +282,7 @@ class EholdingsPackagesImplTest {
 
   @Test
   void shouldRetrievePackageTitlesWhenNoTagOrAccessTypeFilterIsGiven() {
-    var filter = ResourceFilter.builder().packageId("19-3964").filterName("test").sort("relevance")
+    var filter = ResourceFilter.builder().packageId("19-3964").query("test").queryField("name").sort("relevance")
       .page(1).count(25).build();
     Function<RmApiTemplateContext, CompletableFuture<?>> stubFunction = ctx -> completedFuture(null);
     when(packageService.retrievePackageTitles(filter)).thenReturn(stubFunction);
@@ -359,8 +359,8 @@ class EholdingsPackagesImplTest {
 
   private void invokeGetResources(ResourceFilter filter) {
     impl.getEholdingsPackagesResourcesByPackageId(filter.getPackageId(), filter.getFilterTags(),
-      filter.getFilterAccessType(), filter.getFilterSelected(), filter.getFilterType(), filter.getFilterName(),
-      filter.getFilterIsxn(), filter.getFilterSubject(), filter.getFilterPublisher(), filter.getSort(),
+      filter.getFilterAccessType(), filter.getQuery(), filter.getQueryField(), filter.getFilterSelected(),
+      filter.getFilterType(), filter.getFilterAccess(), null, null, null, null, filter.getSort(),
       filter.getPage(), filter.getCount(), OKAPI_HEADERS, asyncResultHandler, null);
   }
 }

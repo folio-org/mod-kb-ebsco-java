@@ -9,7 +9,6 @@ import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Proxy;
 import org.folio.holdingsiq.model.Visibility;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
-import org.folio.rest.jaxrs.model.PackageVisibility;
 import org.folio.service.sanitizer.Sanitizer;
 
 public abstract class CommonPackagePutRequestConverter {
@@ -44,7 +43,7 @@ public abstract class CommonPackagePutRequestConverter {
     return builder;
   }
 
-  protected Visibility convertVisibility(PackageVisibility pv) {
+  protected Visibility convertVisibility(org.folio.rest.jaxrs.model.Visibility pv) {
     var reason = Boolean.TRUE.equals(pv.getHidden()) ? HIDDEN_BY_CUSTOMER : null;
     return new Visibility(pv.getCategory().value(), pv.getHidden(), reason);
   }

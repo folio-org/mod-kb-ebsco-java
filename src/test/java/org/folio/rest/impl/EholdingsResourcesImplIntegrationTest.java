@@ -1,13 +1,17 @@
 package org.folio.rest.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.lang.String.format;
 import static org.folio.HttpStatus.SC_BAD_REQUEST;
 import static org.folio.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.folio.HttpStatus.SC_NOT_FOUND;
 import static org.folio.HttpStatus.SC_NO_CONTENT;
+import static org.folio.HttpStatus.SC_OK;
 import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.repository.RecordType.RESOURCE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
@@ -33,8 +37,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +54,7 @@ import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.ResourceTags;
 import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
+import org.folio.rest.jaxrs.model.Visibility;
 import org.folio.util.IntegrationTestBase;
 import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
@@ -57,20 +65,18 @@ import org.junit.jupiter.api.Test;
 class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   // RM API response files
+  private static final String RMAPI_GET_RESOURCE_WITH_RELATIONSHIPS =
+    "responses/rmapi/resources/get-resource-by-id-with-relationships-response.json";
   private static final String RMAPI_GET_RESOURCE_BY_ID_SUCCESS =
     "responses/rmapi/resources/get-resource-by-id-success-response.json";
   private static final String RMAPI_GET_RESOURCE_NOT_FOUND =
     "responses/rmapi/resources/get-resource-by-id-not-found-response.json";
-  private static final String RMAPI_GET_RESOURCE_EMPTY_CUSTOMER_LIST =
-    "responses/rmapi/resources/get-resource-by-id-response-empty-customer-list.json";
   private static final String RMAPI_GET_MANAGED_RESOURCE_UPDATED =
     "responses/rmapi/resources/get-managed-resource-updated-response.json";
   private static final String RMAPI_GET_MANAGED_RESOURCE_UPDATED_NOT_SELECTED =
     "responses/rmapi/resources/get-managed-resource-updated-response-is-selected-false.json";
   private static final String RMAPI_GET_CUSTOM_RESOURCE_UPDATED =
     "responses/rmapi/resources/get-custom-resource-updated-response.json";
-  private static final String RMAPI_GET_RESOURCES_BY_PACKAGE_ID =
-    "responses/rmapi/resources/get-resources-by-package-id-response.json";
   private static final String RMAPI_GET_VENDOR_FOR_RESOURCE =
     "responses/rmapi/vendors/get-vendor-by-id-for-resource.json";
   private static final String RMAPI_GET_PACKAGE_FOR_RESOURCE =
@@ -232,7 +238,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturn404WhenRmApiNotFoundOnResourceGet() {
-    mockGet(matching(packageTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID) + ".*"),
+    mockGet(matching(packageTitlesRmApi(STUB_PACKAGE_ID) + ".*"),
       readFile(RMAPI_GET_RESOURCE_NOT_FOUND), SC_NOT_FOUND);
 
     var error = getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_NOT_FOUND).as(JsonapiError.class);
@@ -241,12 +247,42 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
   }
 
   @Test
-  void shouldReturn404WhenCustomerListIsEmpty() {
-    mockResource(RMAPI_GET_RESOURCE_EMPTY_CUSTOMER_LIST);
+  void shouldReturn404WhenResourceBelongsToAnotherProvider() {
+    mockResource(RMAPI_GET_RESOURCE_BY_ID_SUCCESS);
 
-    var error = getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_NOT_FOUND).as(JsonapiError.class);
+    var wrongProviderId = (STUB_VENDOR_ID + 1) + "-" + STUB_PACKAGE_ID + "-" + STUB_MANAGED_TITLE_ID;
+    var error = getWithStatus(RESOURCE_BY_ID_PATH.formatted(wrongProviderId), SC_NOT_FOUND).as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "Title is no longer in this package");
+    assertErrorContainsTitle(error, "Title is no longer in this package.");
+  }
+
+  @Test
+  void shouldReturnTitleRelationshipsWhenIncluded() {
+    mockResource(RMAPI_GET_RESOURCE_WITH_RELATIONSHIPS);
+
+    var resource = getWithOk(STUB_MANAGED_RESOURCE_PATH + "?include=relationships").as(Resource.class);
+
+    wm.verify(1, WireMock.getRequestedFor(
+        urlPathEqualTo(resourcesRmApi(STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID)))
+      .withQueryParam("includerelationships", equalTo("true")));
+    var relationships = resource.getData().getAttributes().getTitleRelationships();
+    assertEquals(1, relationships.size());
+    assertEquals("CONTINUED_BY", relationships.getFirst().getType());
+    assertEquals(STUB_MANAGED_TITLE_ID, relationships.getFirst().getSource().getTitleId());
+    assertEquals(4444, relationships.getFirst().getTarget().getTitleId());
+  }
+
+  @Test
+  void shouldReturnVisibilityPerCategoryAlongsideVisibilityData() {
+    mockResource(RMAPI_GET_RESOURCE_BY_ID_SUCCESS);
+
+    var attributes = getWithOk(STUB_MANAGED_RESOURCE_PATH).as(Resource.class).getData().getAttributes();
+
+    assertTrue(attributes.getVisibilityData().getIsHidden());
+    assertEquals(List.of("PF", "FTF", "MARC"), attributes.getVisibility().stream()
+      .map(visibility -> visibility.getCategory().value())
+      .toList());
+    assertTrue(attributes.getVisibility().stream().allMatch(Visibility::getHidden));
   }
 
   @Test
@@ -259,7 +295,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturn500WhenRmApiReturns500ErrorOnResourceGet() {
-    mockGet(matching(packageTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID) + ".*"), SC_INTERNAL_SERVER_ERROR);
+    mockGet(matching(packageTitlesRmApi(STUB_PACKAGE_ID) + ".*"), SC_INTERNAL_SERVER_ERROR);
 
     var error = getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_INTERNAL_SERVER_ERROR)
       .as(JsonapiError.class);
@@ -269,7 +305,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturnUpdatedValuesManagedResourceOnSuccessfulPut() {
-    var managedResourceEndpoint = resourcesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
+    var managedResourceEndpoint = resourcesRmApi(STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
 
     var actualResponse = mockUpdateResourceScenario(RMAPI_GET_MANAGED_RESOURCE_UPDATED,
       managedResourceEndpoint, STUB_MANAGED_RESOURCE_ID, readFile(REQUEST_PUT_MANAGED_RESOURCE));
@@ -283,7 +319,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
   void shouldCreateNewAccessTypeMappingOnSuccessfulPut() {
     var accessTypes = insertAccessTypes(testData(credentialsId), vertx);
     var accessTypeId = accessTypes.getFirst().getId();
-    var managedResourceEndpoint = resourcesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
+    var managedResourceEndpoint = resourcesRmApi(STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
 
     var requestBody = format(readFile(REQUEST_PUT_RESOURCE_WITH_ACCESS_TYPE), accessTypeId);
     var actualResponse = mockUpdateResourceScenario(RMAPI_GET_MANAGED_RESOURCE_UPDATED,
@@ -306,7 +342,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
     var accessTypeId = accessTypes.getFirst().getId();
     insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypeId, vertx);
 
-    var managedResourceEndpoint = resourcesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
+    var managedResourceEndpoint = resourcesRmApi(STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
 
     var actualResponse = mockUpdateResourceScenario(RMAPI_GET_MANAGED_RESOURCE_UPDATED,
       managedResourceEndpoint, STUB_MANAGED_RESOURCE_ID, readFile(REQUEST_PUT_MANAGED_RESOURCE));
@@ -321,7 +357,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturn400OnPutPackageWithNotExistedAccessType() {
-    var managedResourceEndpoint = resourcesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
+    var managedResourceEndpoint = resourcesRmApi(STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
 
     var error = putWithStatus(STUB_MANAGED_RESOURCE_PATH, readFile(REQUEST_PUT_MANAGED_RESOURCE_MISSING_ACCESS_TYPE),
       SC_BAD_REQUEST, CONTENT_TYPE_HEADER).as(JsonapiError.class);
@@ -333,7 +369,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturn422OnPutPackageWithInvalidAccessTypeId() {
-    var managedResourceEndpoint = resourcesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
+    var managedResourceEndpoint = resourcesRmApi(STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
 
     var error = putWithStatus(STUB_MANAGED_RESOURCE_PATH, readFile(REQUEST_PUT_MANAGED_RESOURCE_INVALID_ACCESS_TYPE),
       SC_UNPROCESSABLE_CONTENT, CONTENT_TYPE_HEADER).as(Errors.class);
@@ -348,7 +384,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldDeselectManagedResourceOnPutWithSelectedFalse() {
-    var managedResourceEndpoint = resourcesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
+    var managedResourceEndpoint = resourcesRmApi(STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
 
     var request = readJsonFile(REQUEST_PUT_MANAGED_RESOURCE_NOT_SELECTED, ResourcePutRequest.class);
     request.getData().getAttributes().setIsSelected(false);
@@ -357,6 +393,8 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
     var expectedResource = readJsonFile(EXPECTED_MANAGED_RESOURCE, Resource.class);
     expectedResource.getData().getAttributes().setIsSelected(false);
+    // titleRelationships are omitted when not requested; the generated model would serialize its default []
+    expectedResource.getData().getAttributes().setTitleRelationships(null);
     assertJsonEqual(Json.encode(expectedResource), actualResponse, false);
 
     verifyPut(matching(managedResourceEndpoint),
@@ -365,7 +403,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturnUpdatedValuesCustomResourceOnSuccessfulPut() {
-    var customResourceEndpoint = resourcesRmApi(CUSTOM_VENDOR_ID, CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID);
+    var customResourceEndpoint = resourcesRmApi(CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID);
 
     var actualResponse = mockUpdateResourceScenario(RMAPI_GET_CUSTOM_RESOURCE_UPDATED,
       customResourceEndpoint, STUB_CUSTOM_RESOURCE_ID, readFile(REQUEST_PUT_CUSTOM_RESOURCE));
@@ -377,7 +415,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldAcceptValuesCustomResourceWithUnrecognizedFieldInProxy() {
-    var customResourceEndpoint = resourcesRmApi(CUSTOM_VENDOR_ID, CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID);
+    var customResourceEndpoint = resourcesRmApi(CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID);
 
     var actualResponse = mockUpdateResourceScenario(RMAPI_GET_CUSTOM_RESOURCE_UPDATED,
       customResourceEndpoint, STUB_CUSTOM_RESOURCE_ID, readFile(REQUEST_PUT_CUSTOM_RESOURCE_WITH_PROXIED_URL));
@@ -419,7 +457,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturn422WhenInvalidUrlIsProvidedForCustomResource() {
-    var customResourceEndpoint = resourcesRmApi(CUSTOM_VENDOR_ID, CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID);
+    var customResourceEndpoint = resourcesRmApi(CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID);
 
     mockGet(matching(customResourceEndpoint), readFile(RMAPI_GET_CUSTOM_RESOURCE_UPDATED));
 
@@ -431,13 +469,37 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
   }
 
   @Test
+  void shouldSendVisibilityPerCategoryToRmApiOnPut() {
+    var managedResourceEndpoint = resourcesRmApi(STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
+    var request = new JsonObject(readFile(REQUEST_PUT_MANAGED_RESOURCE));
+    request.getJsonObject("data").getJsonObject("attributes")
+      .put("visibility", new JsonArray()
+        .add(new JsonObject().put("category", "PF").put("hidden", true))
+        .add(new JsonObject().put("category", "FTF").put("hidden", false))
+        .add(new JsonObject().put("category", "MARC").put("hidden", true)));
+
+    mockUpdateResourceScenario(RMAPI_GET_MANAGED_RESOURCE_UPDATED, managedResourceEndpoint,
+      STUB_MANAGED_RESOURCE_ID, request.encode());
+
+    var expectedVisibility = """
+      [{"category": "PF", "hidden": true, "reason": "Hidden by Customer"},
+       {"category": "FTF", "hidden": false},
+       {"category": "MARC", "hidden": true, "reason": "Hidden by Customer"}]
+      """;
+    verifyPut(matching(managedResourceEndpoint),
+      WireMock.matchingJsonPath("$.visibility", equalToJson(expectedVisibility)));
+  }
+
+  @Test
   void shouldPostResourceToRmApi() {
-    mockPackageResources(RMAPI_GET_RESOURCES_BY_PACKAGE_ID);
     mockPackage(RMAPI_GET_CUSTOM_PACKAGE);
     mockTitle(RMAPI_GET_RESOURCE_BY_ID_SUCCESS);
-    mockResource(RMAPI_GET_RESOURCE_BY_ID_SUCCESS);
 
-    var managedResourceEndpoint = resourcesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
+    var managedResourceEndpoint = resourcesRmApi(STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
+    // the title is not in the package before the post, and is returned as a resource after it
+    mockResponseList(urlPathEqualTo(managedResourceEndpoint),
+      aResponse().withStatus(SC_NOT_FOUND),
+      aResponse().withStatus(SC_OK).withBody(readFile(RMAPI_GET_RESOURCE_BY_ID_SUCCESS)));
     var putRequestBodyPattern = new EqualToJsonPattern(readFile(RMAPI_SELECT_RESOURCE_REQUEST), true, true);
     mockPut(matching(managedResourceEndpoint), putRequestBodyPattern, SC_NO_CONTENT);
 
@@ -460,8 +522,20 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
   }
 
   @Test
+  void shouldReturn422IfTitleIsAlreadyInPackage() {
+    mockPackage(RMAPI_GET_CUSTOM_PACKAGE);
+    mockTitle(RMAPI_GET_RESOURCE_BY_ID_SUCCESS);
+    mockResource(RMAPI_GET_RESOURCE_BY_ID_SUCCESS);
+
+    var error =
+      postWithStatus(RESOURCES_PATH, readFile(REQUEST_POST_RESOURCES), SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid Title");
+    verifyPut(anyUrl(), 0);
+  }
+
+  @Test
   void shouldReturn422IfPackageIsNotCustom() {
-    mockPackageResources(RMAPI_GET_RESOURCES_BY_PACKAGE_ID);
     mockPackage(RMAPI_GET_PACKAGE_FOR_RESOURCE);
     mockTitle(RMAPI_GET_RESOURCE_BY_ID_SUCCESS);
 
@@ -474,7 +548,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
   @Test
   void shouldSendDeleteRequestForResourceAssociatedWithCustomPackage() {
     var putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
-    var customResourceEndpoint = resourcesRmApi(CUSTOM_VENDOR_ID, CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID);
+    var customResourceEndpoint = resourcesRmApi(CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID);
     deleteResource(putBodyPattern);
 
     verifyPut(equalTo(customResourceEndpoint), putBodyPattern);
@@ -509,7 +583,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturn400WhenTryingToDeleteResourceAssociatedWithManagedPackage() {
-    var managedResourceEndpoint = resourcesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
+    var managedResourceEndpoint = resourcesRmApi(STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
 
     mockGet(equalTo(managedResourceEndpoint), readFile(RMAPI_GET_MANAGED_RESOURCE_UPDATED));
 
@@ -521,7 +595,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturnListWithBulkFetchResources() {
-    var managedResourceEndpoint = resourcesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
+    var managedResourceEndpoint = resourcesRmApi(STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
 
     mockGet(equalTo(managedResourceEndpoint), readFile(RMAPI_GET_RESOURCE_BY_ID_SUCCESS));
 
@@ -548,9 +622,9 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturnResourcesAndFailedIds() {
-    var managedResourceEndpoint = resourcesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
-    var customResourceEndpoint = resourcesRmApi(CUSTOM_VENDOR_ID, CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID);
-    var thirdResourceEndpoint = resourcesRmApi(186, 3150130, 19087948);
+    var managedResourceEndpoint = resourcesRmApi(STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
+    var customResourceEndpoint = resourcesRmApi(CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID);
+    var thirdResourceEndpoint = resourcesRmApi(3150130, 19087948);
 
     mockGet(equalTo(managedResourceEndpoint), readFile(RMAPI_GET_RESOURCE_BY_ID_SUCCESS));
     mockGet(equalTo(customResourceEndpoint), readFile(RMAPI_GET_CUSTOM_RESOURCE_UPDATED));
@@ -563,7 +637,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturnErrorWhenRmApiFails() {
-    mockGet(matching(packageTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID) + ".*"), SC_INTERNAL_SERVER_ERROR);
+    mockGet(matching(packageTitlesRmApi(STUB_PACKAGE_ID) + ".*"), SC_INTERNAL_SERVER_ERROR);
 
     var bulkFetchCollection = postWithOk(RESOURCES_BULK_FETCH, readFile(REQUEST_POST_RESOURCES_BULK))
       .as(ResourceBulkFetchCollection.class);
@@ -573,16 +647,12 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
     assertEquals(STUB_MANAGED_RESOURCE_ID, bulkFetchCollection.getMeta().getFailed().getResources().getFirst());
   }
 
-  private void mockPackageResources(String responseFile) {
-    mockGet(matching(packageTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID) + ".*"), readFile(responseFile));
-  }
-
   private void mockPackage(String responseFile) {
     mockGet(matching(packageRmApi(STUB_PACKAGE_ID)), readFile(responseFile));
   }
 
   private void mockResource(String responseFile) {
-    mockGet(matching(resourcesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID)),
+    mockGet(matching(resourcesRmApi(STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID)),
       readFile(responseFile));
   }
 
@@ -612,7 +682,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
   }
 
   private void deleteResource(EqualToJsonPattern putBodyPattern) {
-    var customResourceEndpoint = resourcesRmApi(CUSTOM_VENDOR_ID, CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID);
+    var customResourceEndpoint = resourcesRmApi(CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID);
 
     mockGet(equalTo(customResourceEndpoint), readFile(RMAPI_GET_CUSTOM_RESOURCE_UPDATED));
     mockPut(equalTo(customResourceEndpoint), putBodyPattern, SC_NO_CONTENT);

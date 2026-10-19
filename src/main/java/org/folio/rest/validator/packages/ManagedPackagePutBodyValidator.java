@@ -4,7 +4,7 @@ import java.util.List;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
-import org.folio.rest.jaxrs.model.PackageVisibility;
+import org.folio.rest.jaxrs.model.Visibility;
 import org.folio.rest.validator.ValidatorUtil;
 import org.springframework.stereotype.Component;
 
@@ -46,7 +46,7 @@ public class ManagedPackagePutBodyValidator {
   }
 
   private void validateNotSelected(PackagePutDataAttributes attributes, Boolean allowKbToAddTitles,
-                                   List<PackageVisibility> visibility,
+                                   List<Visibility> visibility,
                                    String beginCoverage, String endCoverage, String value) {
     Boolean isSelected = attributes.getIsSelected();
     if (isSelected == null || !isSelected) {

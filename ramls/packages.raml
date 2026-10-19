@@ -10,14 +10,14 @@ documentation:
     content: Implements the eholdings interface using EBSCO KB as backend.
 
 traits:
-  queriable: !include traits/queriable.raml
-  packageQueriable: !include traits/packageQueriable.raml
+  queryable: !include traits/packagesQueryable.raml
   sortable: !include traits/sortable.raml
   pageable: !include traits/pageable.raml
-  packageFilterable: !include traits/packageFilterable.raml
+  packagesFilterable: !include traits/packagesFilterable.raml
   taggable: !include traits/taggable.raml
   accessible: !include traits/accessible.raml
-  packageResourcesFilterable: !include traits/packageResourcesFilterable.raml
+  resourcesQueryable: !include traits/resourcesQueryable.raml
+  resourcesFilterable: !include traits/resourcesFilterable.raml
 
 types:
   packageCollection: !include types/packages/packageCollection.json
@@ -35,7 +35,7 @@ types:
   displayName: Packages
   get:
     description: Retrieve a collection of packages based on the search query.
-    is: [packageQueriable, packageFilterable, taggable, accessible,
+    is: [queryable, packagesFilterable, taggable, accessible,
     sortable: {defaultValue: 'relevance', possibleValues: 'name, relevance'},
     pageable: {maxCountValue: 100, defaultCountValue: 25}]
     queryParameters:
@@ -237,7 +237,7 @@ types:
     /resources:
       get:
         description: Include all resources belonging to a specific package
-        is: [taggable, accessible, packageResourcesFilterable,
+        is: [taggable, accessible, resourcesQueryable, resourcesFilterable,
         sortable: {defaultValue: 'relevance', possibleValues: 'name, relevance'},
         pageable: {maxCountValue: 100, defaultCountValue: 25}]
         responses:

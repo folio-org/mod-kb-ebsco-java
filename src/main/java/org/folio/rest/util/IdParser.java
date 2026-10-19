@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
+import org.folio.holdingsiq.model.Resource;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.holdings.HoldingsId;
@@ -61,6 +62,10 @@ public final class IdParser {
   }
 
   public static String getResourceId(CustomerResources resource) {
+    return concat(resource.getVendorId(), resource.getPackageId(), resource.getTitleId());
+  }
+
+  public static String getResourceId(Resource resource) {
     return concat(resource.getVendorId(), resource.getPackageId(), resource.getTitleId());
   }
 

@@ -5,13 +5,13 @@ import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.RequestContext;
+import org.folio.holdingsiq.model.Resource;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.service.HoldingsIQService;
 import org.folio.holdingsiq.service.LoadService;
 import org.folio.holdingsiq.service.impl.HoldingsIQServiceImpl;
 import org.folio.holdingsiq.service.impl.LoadServiceImpl;
-import org.folio.properties.common.SearchProperties;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rmapi.PackageServiceImpl;
 import org.folio.rmapi.ProvidersServiceImpl;
@@ -41,11 +41,9 @@ public class RmApiTemplateContextBuilder {
   @Autowired
   private VertxCache<PackageCacheKey, PackageData> packageCache;
   @Autowired
-  private VertxCache<ResourceCacheKey, Title> resourceCache;
+  private VertxCache<ResourceCacheKey, Resource> resourceCache;
   @Autowired
   private VertxCache<TitleCacheKey, Title> titleCache;
-  @Autowired
-  private SearchProperties searchProperties;
 
   @Autowired
   private Vertx vertx;
@@ -72,12 +70,12 @@ public class RmApiTemplateContextBuilder {
     final ProvidersServiceImpl providersService =
       new ProvidersServiceImpl(configuration, vertx, tenant, holdingsService, vendorCache);
     final PackageServiceImpl packagesService =
-      new PackageServiceImpl(configuration, vertx, tenant, providersService, titlesService, packageCache,
-        searchProperties);
+      new PackageServiceImpl(configuration, vertx, tenant, providersService, packageCache);
     final ResourcesServiceImpl resourcesService =
       new ResourcesServiceImpl(configuration, vertx, tenant, providersService, packagesService, resourceCache);
     final LoadService loadService = new LoadServiceImpl(configuration, vertx);
     providersService.setPackagesService(packagesService);
+    packagesService.setResourcesService(resourcesService);
 
     return RmApiTemplateContext.builder()
       .configuration(configuration)

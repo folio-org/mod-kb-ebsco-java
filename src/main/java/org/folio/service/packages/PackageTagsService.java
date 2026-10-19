@@ -18,7 +18,7 @@ import org.folio.repository.tag.TagRepository;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.PackageTagsDataAttributes;
 import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rmapi.result.TitleResult;
+import org.folio.rmapi.result.ResourceItemResult;
 import org.springframework.stereotype.Service;
 
 /**
@@ -56,13 +56,14 @@ class PackageTagsService {
       .thenCompose(v -> completedFuture(null));
   }
 
-  CompletableFuture<Void> loadResourceTags(String tenant, Map<String, TitleResult> resourceIdToTitle) {
-    return tagRepository.findPerRecord(tenant, new ArrayList<>(resourceIdToTitle.keySet()), RecordType.RESOURCE)
-      .thenAccept(tagMap -> populateResourceTags(resourceIdToTitle, tagMap));
+  CompletableFuture<Void> loadResourceTags(String tenant, Map<String, ResourceItemResult> resourceIdToItem) {
+    return tagRepository.findPerRecord(tenant, new ArrayList<>(resourceIdToItem.keySet()), RecordType.RESOURCE)
+      .thenAccept(tagMap -> populateResourceTags(resourceIdToItem, tagMap));
   }
 
-  private void populateResourceTags(Map<String, TitleResult> resourceIdToTitle, Map<String, List<DbTag>> tagMap) {
-    tagMap.forEach((id, tags) -> resourceIdToTitle.get(id).setResourceTagList(tags));
+  private void populateResourceTags(Map<String, ResourceItemResult> resourceIdToItem,
+                                    Map<String, List<DbTag>> tagMap) {
+    tagMap.forEach((id, tags) -> resourceIdToItem.get(id).setTagList(tags));
   }
 
   private CompletableFuture<Void> updateStoredPackage(Tags tags, DbPackage pkg, String tenant) {

@@ -2,7 +2,7 @@
   "totalResults": 5,
   "titles": [
     {
-      "titleId": 2099944,
+      "kbid": 2099944,
       "titleName": "A Systemic Perspective to Managing Complexity with Enterprise Architecture",
       "publisherName": "IGI Global",
       "alternateTitleList": [
@@ -52,68 +52,74 @@
       "subjectsList": [
         {
           "type": "BISAC",
-          "subject": "BUSINESS & ECONOMICS \/ Industrial Management"
+          "subject": "BUSINESS & ECONOMICS / Industrial Management"
         },
         {
           "type": "BISAC",
-          "subject": "BUSINESS & ECONOMICS \/ Management"
+          "subject": "BUSINESS & ECONOMICS / Management"
         },
         {
           "type": "BISAC",
-          "subject": "BUSINESS & ECONOMICS \/ Management Science"
+          "subject": "BUSINESS & ECONOMICS / Management Science"
         },
         {
           "type": "BISAC",
-          "subject": "BUSINESS & ECONOMICS \/ Organizational Behavior"
+          "subject": "BUSINESS & ECONOMICS / Organizational Behavior"
         }
       ],
       "isTitleCustom": false,
       "pubType": "Book",
-      "customerResourcesList": [
+      "listId": 2545963,
+      "packageName": "InfoSci-Books 2014",
+      "packageType": "Complete",
+      "isPackageCustom": false,
+      "vendorId": 295,
+      "vendorName": "IGI Global",
+      "locationId": 28972134,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "managedCoverageList": [
         {
-          "titleId": 2099944,
-          "packageId": 2545963,
-          "packageName": "InfoSci-Books 2014",
-          "packageType": "Complete",
-          "isPackageCustom": false,
-          "vendorId": 295,
-          "vendorName": "IGI Global",
-          "locationId": 28972134,
-          "isSelected": true,
-          "isTokenNeeded": false,
-          "visibilityData": {
-            "isHidden": false,
-            "reason": ""
-          },
-          "managedCoverageList": [
-            {
-              "beginCoverage": "2014-01-01",
-              "endCoverage": "2014-12-31"
-            }
-          ],
-          "customCoverageList": [
-
-          ],
-          "coverageStatement": null,
-          "managedEmbargoPeriod": {
-            "embargoUnit": null,
-            "embargoValue": 0
-          },
-          "customEmbargoPeriod": {
-            "embargoUnit": null,
-            "embargoValue": 0
-          },
-          "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-4518-9",
-          "userDefinedField1": "test 1",
-          "userDefinedField2": "test 2",
-          "userDefinedField3": "",
-          "userDefinedField4": null,
-          "userDefinedField5": "test 5"
+          "beginCoverage": "2014-01-01",
+          "endCoverage": "2014-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "http://services.igi-global.com/resolvedoi/resolve.aspx?doi=10.4018/978-1-4666-4518-9",
+      "userDefinedField1": "test 1",
+      "userDefinedField2": "test 2",
+      "userDefinedField3": "",
+      "userDefinedField4": null,
+      "userDefinedField5": "test 5",
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "FTF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "MARC",
+          "hidden": false,
+          "reason": ""
         }
       ]
     },
     {
-      "titleId": 2324668,
+      "kbid": 2324668,
       "titleName": "Academic Knowledge Construction and Multimodal Curriculum Development",
       "publisherName": "IGI Global",
       "alternateTitleList": [
@@ -161,56 +167,62 @@
         },
         {
           "type": "BISAC",
-          "subject": "EDUCATION \/ Higher"
+          "subject": "EDUCATION / Higher"
         }
       ],
       "isTitleCustom": false,
       "pubType": "Book",
-      "customerResourcesList": [
+      "listId": 2545963,
+      "packageName": "InfoSci-Books 2014",
+      "packageType": "Complete",
+      "isPackageCustom": false,
+      "vendorId": 295,
+      "vendorName": "IGI Global",
+      "locationId": 28972354,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "managedCoverageList": [
         {
-          "titleId": 2324668,
-          "packageId": 2545963,
-          "packageName": "InfoSci-Books 2014",
-          "packageType": "Complete",
-          "isPackageCustom": false,
-          "vendorId": 295,
-          "vendorName": "IGI Global",
-          "locationId": 28972354,
-          "isSelected": true,
-          "isTokenNeeded": false,
-          "visibilityData": {
-            "isHidden": false,
-            "reason": ""
-          },
-          "managedCoverageList": [
-            {
-              "beginCoverage": "2014-01-01",
-              "endCoverage": "2014-12-31"
-            }
-          ],
-          "customCoverageList": [
-
-          ],
-          "coverageStatement": null,
-          "managedEmbargoPeriod": {
-            "embargoUnit": null,
-            "embargoValue": 0
-          },
-          "customEmbargoPeriod": {
-            "embargoUnit": null,
-            "embargoValue": 0
-          },
-          "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-4797-8",
-          "userDefinedField1": "test 3",
-          "userDefinedField2": "test 4",
-          "userDefinedField3": "",
-          "userDefinedField4": null,
-          "userDefinedField5": "test 6"
+          "beginCoverage": "2014-01-01",
+          "endCoverage": "2014-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "http://services.igi-global.com/resolvedoi/resolve.aspx?doi=10.4018/978-1-4666-4797-8",
+      "userDefinedField1": "test 3",
+      "userDefinedField2": "test 4",
+      "userDefinedField3": "",
+      "userDefinedField4": null,
+      "userDefinedField5": "test 6",
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "FTF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "MARC",
+          "hidden": false,
+          "reason": ""
         }
       ]
     },
     {
-      "titleId": 2172685,
+      "kbid": 2172685,
       "titleName": "Activity Theory Perspectives on Technology in Higher Education",
       "publisherName": "IGI Global",
       "alternateTitleList": [
@@ -254,56 +266,62 @@
       "subjectsList": [
         {
           "type": "BISAC",
-          "subject": "EDUCATION \/ Higher"
+          "subject": "EDUCATION / Higher"
         }
       ],
       "isTitleCustom": false,
       "pubType": "Book",
-      "customerResourcesList": [
+      "listId": 2545963,
+      "packageName": "InfoSci-Books 2014",
+      "packageType": "Complete",
+      "isPackageCustom": false,
+      "vendorId": 295,
+      "vendorName": "IGI Global",
+      "locationId": 28972340,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "managedCoverageList": [
         {
-          "titleId": 2172685,
-          "packageId": 2545963,
-          "packageName": "InfoSci-Books 2014",
-          "packageType": "Complete",
-          "isPackageCustom": false,
-          "vendorId": 295,
-          "vendorName": "IGI Global",
-          "locationId": 28972340,
-          "isSelected": true,
-          "isTokenNeeded": false,
-          "visibilityData": {
-            "isHidden": false,
-            "reason": ""
-          },
-          "managedCoverageList": [
-            {
-              "beginCoverage": "2014-01-01",
-              "endCoverage": "2014-12-31"
-            }
-          ],
-          "customCoverageList": [
-
-          ],
-          "coverageStatement": null,
-          "managedEmbargoPeriod": {
-            "embargoUnit": null,
-            "embargoValue": 0
-          },
-          "customEmbargoPeriod": {
-            "embargoUnit": null,
-            "embargoValue": 0
-          },
-          "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-4590-5",
-          "userDefinedField1": null,
-          "userDefinedField2": null,
-          "userDefinedField3": null,
-          "userDefinedField4": null,
-          "userDefinedField5": null
+          "beginCoverage": "2014-01-01",
+          "endCoverage": "2014-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "http://services.igi-global.com/resolvedoi/resolve.aspx?doi=10.4018/978-1-4666-4590-5",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null,
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "FTF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "MARC",
+          "hidden": false,
+          "reason": ""
         }
       ]
     },
     {
-      "titleId": 2423505,
+      "kbid": 2423505,
       "titleName": "Advanced Research and Trends in New Technologies, Software, Human-Computer Interaction, and Communicability",
       "publisherName": "IGI Global",
       "alternateTitleList": [
@@ -347,56 +365,62 @@
       "subjectsList": [
         {
           "type": "BISAC",
-          "subject": "PSYCHOLOGY \/ Social Psychology"
+          "subject": "PSYCHOLOGY / Social Psychology"
         }
       ],
       "isTitleCustom": false,
       "pubType": "Book",
-      "customerResourcesList": [
+      "listId": 2545963,
+      "packageName": "InfoSci-Books 2014",
+      "packageType": "Complete",
+      "isPackageCustom": false,
+      "vendorId": 295,
+      "vendorName": "IGI Global",
+      "locationId": 28972237,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "managedCoverageList": [
         {
-          "titleId": 2423505,
-          "packageId": 2545963,
-          "packageName": "InfoSci-Books 2014",
-          "packageType": "Complete",
-          "isPackageCustom": false,
-          "vendorId": 295,
-          "vendorName": "IGI Global",
-          "locationId": 28972237,
-          "isSelected": true,
-          "isTokenNeeded": false,
-          "visibilityData": {
-            "isHidden": false,
-            "reason": ""
-          },
-          "managedCoverageList": [
-            {
-              "beginCoverage": "2014-01-01",
-              "endCoverage": "2014-12-31"
-            }
-          ],
-          "customCoverageList": [
-
-          ],
-          "coverageStatement": null,
-          "managedEmbargoPeriod": {
-            "embargoUnit": null,
-            "embargoValue": 0
-          },
-          "customEmbargoPeriod": {
-            "embargoUnit": null,
-            "embargoValue": 0
-          },
-          "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-4490-8",
-          "userDefinedField1": null,
-          "userDefinedField2": null,
-          "userDefinedField3": null,
-          "userDefinedField4": null,
-          "userDefinedField5": null
+          "beginCoverage": "2014-01-01",
+          "endCoverage": "2014-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "http://services.igi-global.com/resolvedoi/resolve.aspx?doi=10.4018/978-1-4666-4490-8",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null,
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "FTF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "MARC",
+          "hidden": false,
+          "reason": ""
         }
       ]
     },
     {
-      "titleId": 2733268,
+      "kbid": 2733268,
       "titleName": "Adult and Continuing Education: Concepts, Methodologies, Tools, and Applications",
       "publisherName": "IGI Global",
       "alternateTitleList": [
@@ -450,55 +474,61 @@
         },
         {
           "type": "BISAC",
-          "subject": "EDUCATION \/ Adult & Continuing Education"
+          "subject": "EDUCATION / Adult & Continuing Education"
         },
         {
           "type": "BISAC",
-          "subject": "EDUCATION \/ Non-Formal Education"
+          "subject": "EDUCATION / Non-Formal Education"
         }
       ],
       "isTitleCustom": false,
       "pubType": "Book",
-      "customerResourcesList": [
+      "listId": 2545963,
+      "packageName": "InfoSci-Books 2014",
+      "packageType": "Complete",
+      "isPackageCustom": false,
+      "vendorId": 295,
+      "vendorName": "IGI Global",
+      "locationId": 28972367,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "managedCoverageList": [
         {
-          "titleId": 2733268,
-          "packageId": 2545963,
-          "packageName": "InfoSci-Books 2014",
-          "packageType": "Complete",
-          "isPackageCustom": false,
-          "vendorId": 295,
-          "vendorName": "IGI Global",
-          "locationId": 28972367,
-          "isSelected": true,
-          "isTokenNeeded": false,
-          "visibilityData": {
-            "isHidden": false,
-            "reason": ""
-          },
-          "managedCoverageList": [
-            {
-              "beginCoverage": "2014-01-01",
-              "endCoverage": "2014-12-31"
-            }
-          ],
-          "customCoverageList": [
-
-          ],
-          "coverageStatement": null,
-          "managedEmbargoPeriod": {
-            "embargoUnit": null,
-            "embargoValue": 0
-          },
-          "customEmbargoPeriod": {
-            "embargoUnit": null,
-            "embargoValue": 0
-          },
-          "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-5780-9",
-          "userDefinedField1": "test 8",
-          "userDefinedField2": "test 9",
-          "userDefinedField3": "test 10",
-          "userDefinedField4": "test 11",
-          "userDefinedField5": "test 12"
+          "beginCoverage": "2014-01-01",
+          "endCoverage": "2014-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "http://services.igi-global.com/resolvedoi/resolve.aspx?doi=10.4018/978-1-4666-5780-9",
+      "userDefinedField1": "test 8",
+      "userDefinedField2": "test 9",
+      "userDefinedField3": "test 10",
+      "userDefinedField4": "test 11",
+      "userDefinedField5": "test 12",
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "FTF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "MARC",
+          "hidden": false,
+          "reason": ""
         }
       ]
     }

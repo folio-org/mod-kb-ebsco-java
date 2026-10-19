@@ -12,17 +12,16 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import javax.ws.rs.NotFoundException;
 import lombok.extern.log4j.Log4j2;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
-import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
+import org.folio.holdingsiq.model.Resource;
 import org.folio.holdingsiq.model.ResourceId;
-import org.folio.holdingsiq.model.Title;
-import org.folio.holdingsiq.model.Titles;
+import org.folio.holdingsiq.model.Resources;
 import org.folio.holdingsiq.service.PackagesHoldingsIQService;
+import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.impl.ResourcesHoldingsIQServiceImpl;
 import org.folio.rest.util.IdParser;
 import org.folio.rmapi.cache.ResourceCacheKey;
@@ -35,22 +34,28 @@ import org.folio.util.FutureUtils;
 public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
   private static final String INCLUDE_PROVIDER_VALUE = "provider";
   private static final String INCLUDE_PACKAGE_VALUE = "package";
+  private static final String INCLUDE_RELATIONSHIPS_VALUE = "relationships";
 
   private final ProvidersServiceImpl providerService;
   private final PackagesHoldingsIQService packagesService;
-  private final VertxCache<ResourceCacheKey, Title> resourceCache;
+  private final VertxCache<ResourceCacheKey, Resource> resourceCache;
   private final Configuration configuration;
   private final String tenantId;
 
   public ResourcesServiceImpl(Configuration config, Vertx vertx, String tenantId,
                               ProvidersServiceImpl providerService, PackagesHoldingsIQService packagesService,
-                              VertxCache<ResourceCacheKey, Title> resourceCache) {
+                              VertxCache<ResourceCacheKey, Resource> resourceCache) {
     super(config, vertx);
     this.providerService = providerService;
     this.packagesService = packagesService;
     this.configuration = config;
     this.tenantId = tenantId;
     this.resourceCache = resourceCache;
+  }
+
+  @Override
+  public CompletableFuture<Resource> retrieveResource(ResourceId resourceId) {
+    return super.retrieveResource(resourceId).thenApply(resource -> verifyProvider(resource, resourceId));
   }
 
   public CompletableFuture<ResourceResult> retrieveResource(ResourceId resourceId, List<String> includes) {
@@ -60,28 +65,54 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
   public CompletableFuture<ResourceResult> retrieveResource(ResourceId resourceId, List<String> includes,
                                                             boolean useCache) {
 
-    var titleFuture = retrieveTitle(resourceId, useCache);
+    CompletableFuture<Resource> resourceFuture;
+    if (includes.contains(INCLUDE_RELATIONSHIPS_VALUE)) {
+      resourceFuture = retrieveResourceWithRelationships(resourceId);
+    } else {
+      resourceFuture = useCache ? retrieveResourceWithCache(resourceId) : retrieveResource(resourceId);
+    }
     var vendorFuture = retrieveVendor(resourceId, includes);
     var packageFuture = retrievePackage(resourceId, includes);
     boolean includeTitle = includes.contains("title");
 
-    return CompletableFuture.allOf(titleFuture, vendorFuture, packageFuture)
+    return CompletableFuture.allOf(resourceFuture, vendorFuture, packageFuture)
       .thenCompose(o ->
         completedFuture(
-          new ResourceResult(titleFuture.join(), vendorFuture.join().getVendor(), packageFuture.join(), includeTitle)));
+          new ResourceResult(resourceFuture.join(), vendorFuture.join().getVendor(), packageFuture.join(),
+            includeTitle)));
   }
 
-  public CompletableFuture<Titles> retrieveResources(List<ResourceId> resourceIds) {
+  @Override
+  public CompletableFuture<Resource> retrieveResourceWithRelationships(ResourceId resourceId) {
+    return super.retrieveResourceWithRelationships(resourceId)
+      .thenApply(resource -> verifyProvider(resource, resourceId));
+  }
+
+  /**
+   * HoldingsIQ v2 addresses a resource by package and title ids alone, so a mismatched provider id would otherwise
+   * be ignored.
+   */
+  private Resource verifyProvider(Resource resource, ResourceId resourceId) {
+    var vendorId = resource.getVendorId();
+    if (vendorId != null && vendorId != resourceId.providerIdPart()) {
+      throw new ResourceNotFoundException(
+        "Resource " + resourceId + " not found for provider " + resourceId.providerIdPart(),
+        404, "Not Found", null, null);
+    }
+    return resource;
+  }
+
+  public CompletableFuture<Resources> retrieveResources(List<ResourceId> resourceIds) {
     return retrieveResources(resourceIds, Collections.emptyList());
   }
 
-  public CompletableFuture<Titles> retrieveResources(List<ResourceId> resourceIds, List<String> includes) {
+  public CompletableFuture<Resources> retrieveResources(List<ResourceId> resourceIds, List<String> includes) {
     Set<CompletableFuture<ResourceResult>> futures = resourceIds.stream()
       .map(id -> retrieveResource(id, includes, true))
       .collect(Collectors.toSet());
 
     return FutureUtils.allOfSucceeded(futures, throwable -> log.warn(throwable.getMessage(), throwable))
-      .thenApply(this::mapToResources);
+      .thenApply(results -> Resources.builder().titles(sortByTitleName(results)).build());
   }
 
   public CompletableFuture<ResourceBulkResult> retrieveResourcesBulk(Set<String> resourceBulk) {
@@ -100,7 +131,7 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
       .collect(Collectors.toSet());
 
     return FutureUtils.allOfSucceeded(futures, throwable -> log.warn(throwable.getMessage(), throwable))
-      .thenApply(resourceFutures -> mapToResources(resourceFutures, failed));
+      .thenApply(results -> new ResourceBulkResult(sortByTitleName(results), failed));
   }
 
   private CompletableFuture<PackageData> retrievePackage(ResourceId resourceId,
@@ -120,18 +151,7 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
     return completedFuture(new VendorResult(null, null));
   }
 
-  private CompletableFuture<Title> retrieveTitle(ResourceId resourceId, boolean useCache) {
-    if (useCache) {
-      return retrieveResourceWithCache(resourceId, tenantId, configuration)
-        .thenApply(this::validateCustomerResourcesList);
-    } else {
-      return super.retrieveResource(resourceId)
-        .thenApply(this::validateCustomerResourcesList);
-    }
-  }
-
-  private CompletableFuture<Title> retrieveResourceWithCache(ResourceId resourceId, String tenantId,
-                                                             Configuration configuration) {
+  private CompletableFuture<Resource> retrieveResourceWithCache(ResourceId resourceId) {
     ResourceCacheKey cacheKey = ResourceCacheKey.builder()
       .resourceId(resourceId)
       .tenant(tenantId)
@@ -140,19 +160,11 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
     return resourceCache.getValueOrLoad(cacheKey, () -> retrieveResource(resourceId));
   }
 
-  private ResourceBulkResult mapToResources(List<ResourceResult> resourceFutures, List<String> failed) {
-    Titles titlesList = mapToResources(resourceFutures);
-    return new ResourceBulkResult(titlesList, failed);
-  }
-
-  private Titles mapToResources(List<ResourceResult> resourceFutures) {
-    List<Title> titlesList = resourceFutures.stream()
-      .map(ResourceResult::getTitle)
-      .sorted(Comparator.comparing(Title::getTitleName))
+  private List<Resource> sortByTitleName(List<ResourceResult> results) {
+    return results.stream()
+      .map(ResourceResult::getResource)
+      .sorted(Comparator.comparing(Resource::getTitleName))
       .toList();
-    return Titles.builder()
-      .titleList(titlesList)
-      .build();
   }
 
   private ResourceId parseToResourceId(String resourceId, List<String> failed) {
@@ -162,13 +174,5 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
       failed.add(resourceId);
     }
     return null;
-  }
-
-  private Title validateCustomerResourcesList(Title title) {
-    List<CustomerResources> customerResourcesList = title.getCustomerResourcesList();
-    if (customerResourcesList == null || customerResourcesList.isEmpty()) {
-      throw new NotFoundException("Title is no longer in this package");
-    }
-    return title;
   }
 }

@@ -48,6 +48,7 @@
         "embargoValue": 0
       },
       "isPackageCustom": false,
+      "packageType": "Variable",
       "isSelected": true,
       "titleHasSelectedResources": true,
       "isTokenNeeded": false,
@@ -64,6 +65,23 @@
         "isHidden": true,
         "reason": ""
       },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": true,
+          "reason": "Hidden by Customer"
+        },
+        {
+          "category": "FTF",
+          "hidden": true,
+          "reason": "Hidden by Customer"
+        },
+        {
+          "category": "MARC",
+          "hidden": true,
+          "reason": "Hidden by Customer"
+        }
+      ],
       "managedCoverages": [
         {
           "beginCoverage": "2005-01-01",

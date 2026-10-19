@@ -7,12 +7,11 @@ import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 
 import org.folio.holdingsiq.model.AlternateName;
 import org.folio.holdingsiq.model.PackageData;
-import org.folio.holdingsiq.model.Visibility;
+import org.folio.rest.converter.common.attr.VisibilityDetailsMapper;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackageAltName;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
-import org.folio.rest.jaxrs.model.PackageVisibility;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -55,14 +54,7 @@ public class PackageCollectionItemConverter implements Converter<PackageData, Pa
       .withSubjects(null)
       .withTitleCount(packageData.getTitleCount())
       .withUrl(packageData.getPackageUrl())
-      .withVisibility(mapItemsNullable(packageData.getVisibilityDetails(), this::convertVisibility));
-  }
-
-  private PackageVisibility convertVisibility(Visibility visibility) {
-    return new PackageVisibility()
-      .withCategory(PackageVisibility.Category.fromValue(visibility.category().toUpperCase()))
-      .withHidden(visibility.hidden())
-      .withReason(visibility.reason());
+      .withVisibility(mapItemsNullable(packageData.getVisibilityDetails(), VisibilityDetailsMapper::toApiVisibility));
   }
 
   private Coverage convertCustomCoverage(PackageData packageData) {

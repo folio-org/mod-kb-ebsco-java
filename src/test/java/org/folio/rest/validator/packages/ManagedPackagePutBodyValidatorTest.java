@@ -11,8 +11,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
-import org.folio.rest.jaxrs.model.PackageVisibility;
 import org.folio.rest.jaxrs.model.Token;
+import org.folio.rest.jaxrs.model.Visibility;
 import org.folio.util.PackagesTestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,8 +51,8 @@ class ManagedPackagePutBodyValidatorTest {
       new PackagePutDataAttributes()
         .withIsSelected(false)
         .withVisibility(List.of(
-          new PackageVisibility()
-            .withCategory(PackageVisibility.Category.PF)
+          new Visibility()
+            .withCategory(Visibility.Category.PF)
             .withHidden(true))));
     var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
     assertTrue(exception.getMessage().contains("visibility"));

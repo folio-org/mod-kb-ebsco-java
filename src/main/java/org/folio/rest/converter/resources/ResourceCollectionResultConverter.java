@@ -5,9 +5,9 @@ import static org.folio.common.ListUtils.mapItems;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.folio.holdingsiq.model.Resource;
 import org.folio.holdingsiq.model.ResourceId;
-import org.folio.holdingsiq.model.Title;
-import org.folio.holdingsiq.model.Titles;
+import org.folio.holdingsiq.model.Resources;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.resources.DbResource;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
@@ -22,11 +22,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class ResourceCollectionResultConverter implements Converter<ResourceCollectionResult, ResourceCollection> {
 
-  private final Converter<Title, ResourceCollectionItem> resourceCollectionItemConverter;
+  private final Converter<Resource, ResourceCollectionItem> resourceCollectionItemConverter;
   private final Converter<DbHoldingInfo, ResourceCollectionItem> holdingCollectionItemConverter;
 
   public ResourceCollectionResultConverter(
-    Converter<Title, ResourceCollectionItem> resourceCollectionItemConverter,
+    Converter<Resource, ResourceCollectionItem> resourceCollectionItemConverter,
     Converter<DbHoldingInfo, ResourceCollectionItem> holdingCollectionItemConverter) {
     this.resourceCollectionItemConverter = resourceCollectionItemConverter;
     this.holdingCollectionItemConverter = holdingCollectionItemConverter;
@@ -35,15 +35,15 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
   @Override
   public ResourceCollection convert(ResourceCollectionResult resourceCollectionResult) {
 
-    final Titles titles = resourceCollectionResult.titles();
-    final List<DbResource> resources = resourceCollectionResult.titlesList();
+    final Resources resources = resourceCollectionResult.resources();
+    final List<DbResource> dbResources = resourceCollectionResult.dbResources();
     final List<DbHoldingInfo> holdings = resourceCollectionResult.holdings();
-    final List<ResourceCollectionItem> resourceCollectionItems = mapItems(titles.getTitleList(),
-      title -> mapResourceCollectionItem(resources, resourceCollectionItemConverter.convert(title),
-        createResourceId(title)));
+    final List<ResourceCollectionItem> resourceCollectionItems = mapItems(resources.getTitles(),
+      resource -> mapResourceCollectionItem(dbResources, resourceCollectionItemConverter.convert(resource),
+        createResourceId(resource)));
 
     final List<ResourceCollectionItem> holdingCollectionItems = mapItems(holdings,
-      dbHolding -> mapResourceCollectionItem(resources, holdingCollectionItemConverter.convert(dbHolding),
+      dbHolding -> mapResourceCollectionItem(dbResources, holdingCollectionItemConverter.convert(dbHolding),
         createResourceId(dbHolding)));
 
     resourceCollectionItems.addAll(holdingCollectionItems);
@@ -51,7 +51,7 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
 
     return new ResourceCollection()
       .withJsonapi(RestConstants.JSONAPI)
-      .withMeta(new MetaTotalResults().withTotalResults(titles.getTotalResults()))
+      .withMeta(new MetaTotalResults().withTotalResults(resources.getTotalResults()))
       .withData(resourceCollectionItems);
   }
 
@@ -69,10 +69,8 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
     return item;
   }
 
-  private ResourceId createResourceId(Title title) {
-    return new ResourceId(title.getCustomerResourcesList().getFirst().getVendorId(),
-      title.getCustomerResourcesList().getFirst().getPackageId(),
-      title.getTitleId());
+  private ResourceId createResourceId(Resource resource) {
+    return new ResourceId(resource.getVendorId(), resource.getPackageId(), resource.getTitleId());
   }
 
   private ResourceId createResourceId(DbHoldingInfo holding) {

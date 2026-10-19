@@ -1,0 +1,128 @@
+{
+  "kbid": 762169,
+  "titleName": "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
+  "publisherName": "Praeger",
+  "identifiersList": [
+    {
+      "id": "300079",
+      "source": "ResourceIdentifier",
+      "subtype": 0,
+      "type": 7
+    },
+    {
+      "id": "762169",
+      "source": "AtoZ",
+      "subtype": 0,
+      "type": 9
+    },
+    {
+      "id": "978-0-275-98214-0",
+      "source": "ResourceIdentifier",
+      "subtype": 1,
+      "type": 1
+    },
+    {
+      "id": "978-0-313-06800-3",
+      "source": "ResourceIdentifier",
+      "subtype": 2,
+      "type": 1
+    },
+    {
+      "id": "978-1-282-40979-8",
+      "source": "ResourceIdentifier",
+      "subtype": 2,
+      "type": 1
+    }
+  ],
+  "subjectsList": [
+    {
+      "type": "BISAC",
+      "subject": "SOCIAL SCIENCE / Ethnic Studies / General"
+    }
+  ],
+  "alternateTitleList": [
+    {
+      "alternateTitle": "Detroit Coll Law Rev",
+      "titleType": "Abbreviated"
+    }
+  ],
+  "isTitleCustom": false,
+  "pubType": "Book",
+  "description": null,
+  "edition": null,
+  "isPeerReviewed": false,
+  "contributorsList": [
+    {
+      "type": "author",
+      "contributor": "Beeman, William O."
+    }
+  ],
+  "listId": 3964,
+  "packageName": "ABC-CLIO eBook Collection",
+  "packageType": "Variable",
+  "proxy": {
+    "id": "<n>",
+    "inherited": true,
+    "proxiedUrl": "https://example.com"
+  },
+  "isPackageCustom": false,
+  "vendorId": 19,
+  "vendorName": "ABC-CLIO",
+  "locationId": 2863717,
+  "isSelected": true,
+  "isTokenNeeded": false,
+  "managedCoverageList": [
+    {
+      "beginCoverage": "2005-01-01",
+      "endCoverage": "2005-12-31"
+    }
+  ],
+  "customCoverageList": [],
+  "coverageStatement": null,
+  "managedEmbargoPeriod": {
+    "embargoUnit": null,
+    "embargoValue": 0
+  },
+  "customEmbargoPeriod": {
+    "embargoUnit": null,
+    "embargoValue": 0
+  },
+  "url": "https://publisher.abc-clio.com/9780313068003/",
+  "userDefinedField1": "test 1",
+  "userDefinedField2": "test 2",
+  "userDefinedField3": "",
+  "userDefinedField4": null,
+  "userDefinedField5": "test 5",
+  "visibility": [
+    {
+      "category": "PF",
+      "hidden": true,
+      "reason": "Hidden by Customer"
+    },
+    {
+      "category": "FTF",
+      "hidden": true,
+      "reason": "Hidden by Customer"
+    },
+    {
+      "category": "MARC",
+      "hidden": true,
+      "reason": "Hidden by Customer"
+    }
+  ],
+  "titleRelationships": [
+    {
+      "resourceRelationshipId": 42,
+      "source": {
+        "kbid": 762169,
+        "name": "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other"
+      },
+      "target": {
+        "kbid": 4444,
+        "name": "Continued Title"
+      },
+      "type": "CONTINUED_BY",
+      "date": "2020-01-01T00:00:00Z"
+    }
+  ]
+}

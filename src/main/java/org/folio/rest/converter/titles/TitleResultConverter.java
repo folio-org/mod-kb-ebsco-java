@@ -4,6 +4,7 @@ import static java.util.Comparator.comparing;
 import static java.util.Comparator.comparingInt;
 import static java.util.Comparator.nullsLast;
 import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
 import static org.apache.commons.collections4.IterableUtils.matchesAny;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.titles.TitleConverterUtils.createEmptyResourcesRelationships;
@@ -35,6 +36,7 @@ import org.folio.rest.jaxrs.model.TitleAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
 import org.folio.rest.util.IdParser;
 import org.folio.rest.util.RestConstants;
+import org.folio.rmapi.ResourceMapper;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.TitleResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +97,7 @@ public class TitleResultConverter implements Converter<TitleResult, Title> {
       .withEdition(rmapiTitle.getEdition())
       .withDescription(rmapiTitle.getDescription())
       .withIsPeerReviewed(rmapiTitle.getIsPeerReviewed())
+      .withTitleRelationships(TitleRelationshipMapper.toApiRelationships(rmapiTitle.getTitleRelationships()))
       .withTags(titleResult.getTags());
   }
 
@@ -128,8 +131,15 @@ public class TitleResultConverter implements Converter<TitleResult, Title> {
   }
 
   private List<ResourceCollectionItem> extractResourceCollectionItems(org.folio.holdingsiq.model.Title rmapiTitle) {
-    ResourceResult resourceResult = new ResourceResult(rmapiTitle, null, null, false);
-    return mapItems(resourcesConverter.convert(resourceResult), Resource::getData);
+    List<CustomerResources> customerResources = rmapiTitle.getCustomerResourcesList();
+    boolean titleHasSelectedResources = matchesAny(customerResources, CustomerResources::getIsSelected);
+    return mapItems(customerResources, customerResource -> {
+      var resourceResult = new ResourceResult(ResourceMapper.toResource(rmapiTitle, customerResource), null, null,
+        false);
+      ResourceCollectionItem item = requireNonNull(resourcesConverter.convert(resourceResult)).getFirst().getData();
+      item.getAttributes().setTitleHasSelectedResources(titleHasSelectedResources);
+      return item;
+    });
   }
 
   private List<RelationshipData> convertResourcesRelationship(List<CustomerResources> customerResources) {

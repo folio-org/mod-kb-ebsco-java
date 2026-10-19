@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
+import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.Resource;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.impl.TitlesHoldingsIQServiceImpl;
@@ -57,8 +59,12 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
       .thenApply(this::mapToTitles);
   }
 
-  public void updateCache(Title title) {
-    var cacheKey = buildTitleCacheKey(title.getTitleId());
+  /**
+   * Caches the title of the updated resource, keeping the other packages of the title that are already cached.
+   */
+  public void updateCache(Resource resource) {
+    var cacheKey = buildTitleCacheKey(resource.getTitleId());
+    var title = ResourceMapper.toTitle(resource);
     Title cachedTitle = titleCache.getValue(cacheKey);
     if (!Objects.isNull(cachedTitle)) {
       mergeCustomerResources(cachedTitle, title);
@@ -78,16 +84,12 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
   }
 
   private void mergeCustomerResources(Title cachedTitle, Title title) {
-    var updatedCustomerResources = title.getCustomerResourcesList();
-    var customerResources = cachedTitle.getCustomerResourcesList();
-
-    if (!updatedCustomerResources.isEmpty()) {
-      var updatedCustomerResourceId = updatedCustomerResources.getFirst().getPackageId();
-      var oldCustomerResources = customerResources.stream()
-        .filter(resource -> !Objects.equals(resource.getPackageId(), updatedCustomerResourceId))
-        .toList();
-      updatedCustomerResources.addAll(oldCustomerResources);
-    }
+    List<CustomerResources> updatedCustomerResources = title.getCustomerResourcesList();
+    var updatedCustomerResourceId = updatedCustomerResources.getFirst().getPackageId();
+    var oldCustomerResources = cachedTitle.getCustomerResourcesList().stream()
+      .filter(resource -> !Objects.equals(resource.getPackageId(), updatedCustomerResourceId))
+      .toList();
+    updatedCustomerResources.addAll(oldCustomerResources);
   }
 
   private Titles mapToTitles(List<Title> titles) {

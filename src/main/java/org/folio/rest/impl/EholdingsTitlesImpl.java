@@ -40,6 +40,7 @@ import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.model.filter.AccessTypeFilter;
+import org.folio.rest.model.filter.LegacySearchParams;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.model.filter.TitleFilter;
 import org.folio.rest.util.ErrorUtil;
@@ -61,6 +62,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
   private static final String INCLUDE_RESOURCES_VALUE = "resources";
+  private static final String INCLUDE_RELATIONSHIPS_VALUE = "relationships";
 
   @Autowired
   private Converter<TitlePostRequest, TitlePost> titlePostRequestConverter;
@@ -90,21 +92,24 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsTitles(List<String> filterTags, List<String> filterAccessType, String filterSelected,
-                                 String filterType, String filterName, String filterIsxn, String filterSubject,
-                                 String filterPublisher,
-                                 List<String> filterPackageIds, String include, String sort, int page, int count,
-                                 Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
-                                 Context vertxContext) {
+  public void getEholdingsTitles(String query, String queryField, String queryType, List<String> filterTags,
+                                 List<String> filterAccessType, String filterSelected, String filterType,
+                                 String filterName, String filterIsxn, String filterSubject, String filterPublisher,
+                                 String filterAccess, List<String> filterPackageIds, String include, String sort,
+                                 int page, int count, Map<String, String> okapiHeaders,
+                                 Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    var search = LegacySearchParams.resolve(query, queryField, filterName, filterIsxn, filterSubject,
+      filterPublisher);
+
     var filter = TitleFilter.builder()
+      .query(search.query())
+      .queryField(search.queryField())
+      .queryType(queryType)
       .filterTags(filterTags)
       .filterAccessType(filterAccessType)
       .filterSelected(filterSelected)
       .filterType(filterType)
-      .filterName(filterName)
-      .filterIsxn(filterIsxn)
-      .filterSubject(filterSubject)
-      .filterPublisher(filterPublisher)
+      .filterAccess(filterAccess)
       .filterPackageIds(filterPackageIds)
       .sort(sort)
       .page(page)
@@ -144,7 +149,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getTitlesService().retrieveTitle(titleIdLong)
+        retrieveTitle(titleIdLong, isIncluded(include, INCLUDE_RELATIONSHIPS_VALUE), context)
           .thenCompose(title -> completedFuture(toTitleResult(title, shouldIncludeResources(include))))
           .thenCompose(result -> loadTags(result, context))
       )
@@ -190,9 +195,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       return filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(AccessTypeFilter.from(filter), context);
     } else {
       return context.getTitlesService()
-        .retrieveTitles(filter.createFilterQuery(), searchProperties.titlesSearchType(),
-          filter.resolveSort(), filter.getPage(), filter.getCount()
-        );
+        .retrieveTitles(filter.toClientFilter(searchProperties), filter.toPageable());
     }
   }
 
@@ -208,8 +211,21 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     return new TitleResult(title, includeResource);
   }
 
+  private CompletableFuture<org.folio.holdingsiq.model.Title> retrieveTitle(int titleId,
+                                                                            boolean includeRelationships,
+                                                                            RmApiTemplateContext context) {
+    var titlesService = context.getTitlesService();
+    return includeRelationships
+           ? titlesService.retrieveTitleWithRelationships(titleId)
+           : titlesService.retrieveTitle(titleId);
+  }
+
   private boolean shouldIncludeResources(String include) {
-    return INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include);
+    return isIncluded(include, INCLUDE_RESOURCES_VALUE);
+  }
+
+  private boolean isIncluded(String include, String value) {
+    return ListUtils.parseByComma(include).stream().anyMatch(value::equalsIgnoreCase);
   }
 
   private CompletableFuture<TitleResult> loadTags(TitleResult result,

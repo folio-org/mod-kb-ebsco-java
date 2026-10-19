@@ -85,6 +85,14 @@
       "type": "object",
       "description": "Title tags",
       "$ref": "../../raml-util/schemas/tags.schema"
+    },
+    "titleRelationships": {
+      "type": "array",
+      "description": "Title relationships. Returned only when requested with include=relationships",
+      "items": {
+        "type": "object",
+        "$ref": "titleRelationship.json"
+      }
     }
   },
   "required": [
@@ -92,5 +100,3 @@
     "publicationType"
   ]
 }
-
-

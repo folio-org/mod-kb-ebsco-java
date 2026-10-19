@@ -1,5 +1,5 @@
 {
-  "titleId": 762169,
+  "kbid": 762169,
   "titleName": "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
   "publisherName": "Praeger",
   "identifiersList": [
@@ -42,50 +42,6 @@
   ],
   "isTitleCustom": false,
   "pubType": "Book",
-  "customerResourcesList": [
-    {
-      "titleId": 762169,
-      "packageId": 3964,
-      "packageName": "ABC-CLIO eBook Collection",
-      "packageType": "Variable",
-      "proxy": {
-        "id": "Test-proxy-id",
-        "inherited": false
-      },
-      "isPackageCustom": false,
-      "vendorId": 19,
-      "vendorName": "ABC-CLIO",
-      "locationId": 2863717,
-      "isSelected": false,
-      "isTokenNeeded": false,
-      "visibilityData": {
-        "isHidden": false,
-        "reason": "Hidden by Customer"
-      },
-      "managedCoverageList": [
-        {
-          "beginCoverage": "2005-01-01",
-          "endCoverage": "2005-12-31"
-        }
-      ],
-      "customCoverageList": [],
-      "coverageStatement": "test coverage statement",
-      "managedEmbargoPeriod": {
-        "embargoUnit": null,
-        "embargoValue": 0
-      },
-      "customEmbargoPeriod": {
-        "embargoUnit": "Years",
-        "embargoValue": 10
-      },
-      "url": "https://publisher.abc-clio.com/9780313068003/",
-      "userDefinedField1": "test 1",
-      "userDefinedField2": "test 2",
-      "userDefinedField3": "",
-      "userDefinedField4": null,
-      "userDefinedField5": "test 5"
-    }
-  ],
   "description": null,
   "edition": null,
   "isPeerReviewed": false,
@@ -93,6 +49,58 @@
     {
       "type": "author",
       "contributor": "Beeman, William O."
+    }
+  ],
+  "listId": 3964,
+  "packageName": "ABC-CLIO eBook Collection",
+  "packageType": "Variable",
+  "proxy": {
+    "id": "Test-proxy-id",
+    "inherited": false
+  },
+  "isPackageCustom": false,
+  "vendorId": 19,
+  "vendorName": "ABC-CLIO",
+  "locationId": 2863717,
+  "isSelected": false,
+  "isTokenNeeded": false,
+  "managedCoverageList": [
+    {
+      "beginCoverage": "2005-01-01",
+      "endCoverage": "2005-12-31"
+    }
+  ],
+  "customCoverageList": [],
+  "coverageStatement": "test coverage statement",
+  "managedEmbargoPeriod": {
+    "embargoUnit": null,
+    "embargoValue": 0
+  },
+  "customEmbargoPeriod": {
+    "embargoUnit": "Years",
+    "embargoValue": 10
+  },
+  "url": "https://publisher.abc-clio.com/9780313068003/",
+  "userDefinedField1": "test 1",
+  "userDefinedField2": "test 2",
+  "userDefinedField3": "",
+  "userDefinedField4": null,
+  "userDefinedField5": "test 5",
+  "visibility": [
+    {
+      "category": "PF",
+      "hidden": false,
+      "reason": "Hidden by Customer"
+    },
+    {
+      "category": "FTF",
+      "hidden": false,
+      "reason": "Hidden by Customer"
+    },
+    {
+      "category": "MARC",
+      "hidden": false,
+      "reason": "Hidden by Customer"
     }
   ]
 }

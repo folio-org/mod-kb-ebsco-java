@@ -26,27 +26,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.BooleanUtils;
 import org.folio.HttpHeaders;
 import org.folio.db.RowSetUtils;
-import org.folio.holdingsiq.model.CustomerResources;
-import org.folio.holdingsiq.model.FilterQuery;
-import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.RequestContext;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.ResourceSelectedPayload;
-import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.Title;
-import org.folio.holdingsiq.service.PackagesHoldingsIQService;
-import org.folio.holdingsiq.service.TitlesHoldingsIQService;
+import org.folio.holdingsiq.service.ResourcesHoldingsIQService;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
-import org.folio.properties.common.SearchProperties;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.resources.DbResource;
@@ -88,8 +82,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 @SuppressWarnings("java:S6813")
 public class EholdingsResourcesImpl implements EholdingsResources {
 
-  private static final int MAX_TITLE_COUNT = 100;
-
   private static final String RESOURCE_NOT_FOUND_MESSAGE = "Title is no longer in this package.";
   private static final String RESOURCE_CANNOT_BE_DELETED_TITLE = "Resource cannot be deleted";
   private static final String RESOURCE_CANNOT_BE_DELETED_DETAIL = "Resource is not in a custom package";
@@ -117,8 +109,6 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @Autowired
   @Qualifier("securedUserCredentialsService")
   private UserKbCredentialsService userKbCredentialsService;
-  @Autowired
-  private SearchProperties searchProperties;
 
   public EholdingsResourcesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -166,9 +156,9 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context -> fetchAccessType(entity, context)
         .thenCompose(accessType -> processResourceUpdate(entity, parsedResourceId, context)
-          .thenCompose(resourceResult -> {
-            context.getTitlesService().updateCache(resourceResult);
-            return updateAccessType(resourceId, resourceResult, accessType, context);
+          .thenCompose(resource -> {
+            context.getTitlesService().updateCache(resource);
+            return updateAccessType(resourceId, resource, accessType, context);
           })
         ))
       .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
@@ -187,8 +177,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getResourcesService().retrieveResource(parsedResourceId)
-          .thenCompose(title -> {
-            if (BooleanUtils.isNotTrue(title.getCustomerResourcesList().getFirst().getIsPackageCustom())) {
+          .thenCompose(resource -> {
+            if (BooleanUtils.isNotTrue(resource.getIsPackageCustom())) {
               throw new InputValidationException(RESOURCE_CANNOT_BE_DELETED_TITLE, RESOURCE_CANNOT_BE_DELETED_DETAIL);
             }
             return context.getResourcesService().deleteResource(parsedResourceId);
@@ -237,18 +227,17 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     ResourcePostDataAttributes attributes) {
     var titleId = parseTitleId(attributes.getTitleId());
     PackageId packageId = parsePackageId(attributes.getPackageId());
-    return context -> (CompletableFuture<?>) getObjectsForPostResource(titleId, packageId, context.getTitlesService(),
-      context.getPackagesService())
+    ResourceId resourceId = new ResourceId(packageId.providerIdPart(), packageId.packageIdPart(), titleId);
+    return context -> getObjectsForPostResource(resourceId, context)
       .thenCompose(result -> {
         Title title = result.title();
-        postValidator.validateRelatedObjects(result.packageData(), title, result.titles());
-        ResourceSelectedPayload postRequest =
+        postValidator.validateRelatedObjects(result.packageData(), result.titleInPackage());
+        var postRequest =
           new ResourceSelectedPayload(true, title.getTitleName(), title.getPubType(), attributes.getUrl());
-        ResourceId resourceId = new ResourceId(packageId.providerIdPart(), packageId.packageIdPart(), titleId);
         return context.getResourcesService().postResource(postRequest, resourceId);
       })
-      .thenCompose(title -> CompletableFuture.completedFuture(
-        new ResourceResult(title, null, null, false)));
+      .thenCompose(resource -> CompletableFuture.completedFuture(
+        new ResourceResult(resource, null, null, false)));
   }
 
   private CompletableFuture<AccessType> fetchAccessType(ResourcePutRequest entity,
@@ -262,12 +251,13 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     }
   }
 
-  private CompletableFuture<ResourceResult> updateAccessType(String recordId, Title titleResult,
+  private CompletableFuture<ResourceResult> updateAccessType(String recordId,
+                                                             org.folio.holdingsiq.model.Resource resource,
                                                              AccessType accessType,
                                                              RmApiTemplateContext context) {
     return updateRecordMapping(accessType, recordId, context)
       .thenApply(a -> {
-        ResourceResult resourceResult = new ResourceResult(titleResult, null, null, false);
+        ResourceResult resourceResult = new ResourceResult(resource, null, null, false);
         resourceResult.setAccessType(accessType);
         return resourceResult;
       });
@@ -280,8 +270,10 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private CompletableFuture<ResourceResult> loadRelatedEntities(ResourceResult result, RmApiTemplateContext context) {
-    CustomerResources resource = result.getTitle().getCustomerResourcesList().getFirst();
-    RecordKey recordKey = RecordKey.builder().recordId(getResourceId(resource)).recordType(RecordType.RESOURCE).build();
+    RecordKey recordKey = RecordKey.builder()
+      .recordId(getResourceId(result.getResource()))
+      .recordType(RecordType.RESOURCE)
+      .build();
     return CompletableFuture.allOf(
         relatedEntitiesLoader.loadAccessType(result, recordKey, context),
         relatedEntitiesLoader.loadTags(result, recordKey, context))
@@ -312,22 +304,36 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       .thenCompose(v -> CompletableFuture.completedFuture(null));
   }
 
-  private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(
-    int titleId, PackageId packageId,
-    TitlesHoldingsIQService titlesService,
-    PackagesHoldingsIQService packagesService) {
-    CompletableFuture<Title> titleFuture = titlesService.retrieveTitle(titleId);
-    CompletableFuture<PackageData> packageFuture = packagesService.retrievePackage(packageId.packageIdPart());
-    return CompletableFuture.allOf(titleFuture, packageFuture)
-      .thenCompose(o -> {
-        FilterQuery filterByName = FilterQuery.builder()
-          .name(titleFuture.join().getTitleName())
-          .build();
-        return titlesService.retrieveTitles(packageId.providerIdPart(), packageId.packageIdPart(),
-          filterByName, searchProperties.titlesSearchType(), Sort.RELEVANCE, 1, MAX_TITLE_COUNT);
-      })
-      .thenCompose(titles -> CompletableFuture.completedFuture(
-        new ObjectsForPostResourceResult(titleFuture.join(), packageFuture.join(), titles)));
+  private CompletableFuture<ObjectsForPostResourceResult> getObjectsForPostResource(ResourceId resourceId,
+                                                                                    RmApiTemplateContext context) {
+    var titleFuture = context.getTitlesService().retrieveTitle(resourceId.titleIdPart());
+    var packageFuture = context.getPackagesService()
+      .retrievePackage(new PackageId(resourceId.providerIdPart(), resourceId.packageIdPart()));
+    var titleInPackageFuture = isTitleInPackage(resourceId, context.getResourcesService());
+    return CompletableFuture.allOf(titleFuture, packageFuture, titleInPackageFuture)
+      .thenApply(o -> new ObjectsForPostResourceResult(
+        titleFuture.join(),
+        packageFuture.join(),
+        titleInPackageFuture.join())
+      );
+  }
+
+  /**
+   * Checks whether the title is already in the package: HoldingsIQ returns 404 for a title that is not in it.
+   */
+  private CompletableFuture<Boolean> isTitleInPackage(ResourceId resourceId,
+                                                      ResourcesHoldingsIQService resourcesService) {
+    return resourcesService.retrieveResource(resourceId)
+      .handle((resource, throwable) -> {
+        if (throwable == null) {
+          return true;
+        }
+        var cause = throwable instanceof CompletionException ? throwable.getCause() : throwable;
+        if (cause instanceof ResourceNotFoundException) {
+          return false;
+        }
+        throw new CompletionException(cause);
+      });
   }
 
   private CompletableFuture<Void> updateStoredResource(DbResource resource, String tenant) {
@@ -348,17 +354,17 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     }
   }
 
-  private CompletableFuture<Title> processResourceUpdate(ResourcePutRequest entity, ResourceId parsedResourceId,
-                                                         RmApiTemplateContext context) {
+  private CompletableFuture<org.folio.holdingsiq.model.Resource> processResourceUpdate(
+    ResourcePutRequest entity, ResourceId parsedResourceId, RmApiTemplateContext context) {
     return context.getResourcesService().retrieveResource(parsedResourceId)
-      .thenCompose(title -> {
+      .thenCompose(resource -> {
         ResourcePut resourcePutBody;
-        boolean isTitleCustom = title.getIsTitleCustom();
+        boolean isTitleCustom = resource.getIsTitleCustom();
         resourcePutBodyValidator.validate(entity, isTitleCustom);
         if (isTitleCustom) {
-          resourcePutBody = converter.convertToRmApiCustomResourcePutRequest(entity, title);
+          resourcePutBody = converter.convertToRmApiCustomResourcePutRequest(entity, resource);
         } else {
-          resourcePutBody = converter.convertToRmApiResourcePutRequest(entity, title);
+          resourcePutBody = converter.convertToRmApiResourcePutRequest(entity, resource);
         }
         return context.getResourcesService().updateResource(parsedResourceId, resourcePutBody);
       })

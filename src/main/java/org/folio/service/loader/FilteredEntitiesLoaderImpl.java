@@ -24,6 +24,7 @@ import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.ResourceId;
+import org.folio.holdingsiq.model.Resources;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.model.Vendors;
@@ -216,9 +217,9 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
       .collect(Collectors.toCollection(ArrayList::new));
   }
 
-  private ResourceCollectionResult toResourceCollectionResult(Titles titles, List<DbResource> resourcesResult,
+  private ResourceCollectionResult toResourceCollectionResult(Resources resources, List<DbResource> resourcesResult,
                                                               List<DbHoldingInfo> dbHoldings, Integer resourceCount) {
-    return new ResourceCollectionResult(titles.toBuilder().totalResults(resourceCount).build(), resourcesResult,
+    return new ResourceCollectionResult(resources.toBuilder().totalResults(resourceCount).build(), resourcesResult,
       dbHoldings);
   }
 

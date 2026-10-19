@@ -1,5 +1,5 @@
 {
-  "titleId": 19412030,
+  "kbid": 19412030,
   "titleName": "new name",
   "publisherName": "Not Empty",
   "identifiersList": [
@@ -14,8 +14,8 @@
   "pubType": "book",
   "customerResourcesList": [
     {
-      "titleId": 19412030,
-      "packageId": 3157070,
+      "kbid": 19412030,
+      "listId": 3157070,
       "packageName": "Andrii custom package ",
       "packageType": "Custom",
       "proxy": {
@@ -28,10 +28,6 @@
       "locationId": 43006476,
       "isSelected": true,
       "isTokenNeeded": false,
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
       "managedCoverageList": [],
       "customCoverageList": [
         {
@@ -53,7 +49,24 @@
       "userDefinedField2": null,
       "userDefinedField3": null,
       "userDefinedField4": null,
-      "userDefinedField5": null
+      "userDefinedField5": null,
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "FTF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "MARC",
+          "hidden": false,
+          "reason": ""
+        }
+      ]
     }
   ],
   "description": "test description",

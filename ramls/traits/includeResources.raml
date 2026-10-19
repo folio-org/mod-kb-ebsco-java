@@ -3,7 +3,9 @@ queryParameters:
     displayName: Related Resources
     type: string
     description: |
-      Include related resource objects, each representing a partnering of this title with a package.
+      Comma-separated list of what to include:
+      `resources` - related resource objects, each representing a partnering of this title with a package;
+      `relationships` - title relationships (single title only).
       Any bogus value, like `include=deciduousTrees`, will be silently ignored.
     example: resources
     required: false

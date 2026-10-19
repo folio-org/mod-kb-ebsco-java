@@ -21,6 +21,21 @@
           "subject": "Social Services",
           "type": "TLI"
         }
+      ],
+      "titleRelationships": [
+        {
+          "id": 42,
+          "type": "CONTINUED_BY",
+          "date": "2020-01-01T00:00:00Z",
+          "source": {
+            "titleId": 100130,
+            "name": "A call to action: Changing the culture of drinking at U.S. colleges"
+          },
+          "target": {
+            "titleId": 4444,
+            "name": "Continued Title"
+          }
+        }
       ]
     },
     "id": "100130",

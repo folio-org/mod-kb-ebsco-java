@@ -23,7 +23,7 @@ import org.folio.holdingsiq.model.PackagePost;
 import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.RequestContext;
-import org.folio.holdingsiq.model.Titles;
+import org.folio.holdingsiq.model.Resources;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.properties.common.SearchProperties;
@@ -48,7 +48,7 @@ import org.folio.rmapi.PackageServiceImpl;
 import org.folio.rmapi.ProvidersServiceImpl;
 import org.folio.rmapi.TitlesServiceImpl;
 import org.folio.rmapi.result.PackageResult;
-import org.folio.rmapi.result.TitleCollectionResult;
+import org.folio.rmapi.result.ResourceItemCollectionResult;
 import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.util.TestFutureFailedException;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,7 +77,7 @@ class PackageServiceTest {
   @Mock
   private RelatedEntitiesLoader relatedEntitiesLoader;
   @Mock
-  private Converter<Titles, TitleCollectionResult> titleCollectionConverter;
+  private Converter<Resources, ResourceItemCollectionResult> resourceItemCollectionConverter;
   @Mock
   private PackageServiceImpl packagesRmApiService;
   @Mock
@@ -92,7 +92,8 @@ class PackageServiceTest {
   void setUp() {
     var searchProperties = new SearchProperties("any", "any", "b");
     packageService = new PackageService(requestConvertionService, validationService, packageAccessTypeService,
-      packageTagsService, customProviderIdService, relatedEntitiesLoader, titleCollectionConverter, searchProperties);
+      packageTagsService, customProviderIdService, relatedEntitiesLoader, resourceItemCollectionConverter,
+      searchProperties);
 
     var requestContext = new RequestContext(Map.of(
       XOkapiHeaders.TENANT, TENANT,
@@ -203,7 +204,7 @@ class PackageServiceTest {
     var packageId = new PackageId(19, 3964);
     var originalPackage = PackageData.builder().vendorId(19).packageId(3964).isCustom(true).build();
     var entity = buildPutRequest(false, null);
-    when(packagesRmApiService.retrievePackage(3964)).thenReturn(completedFuture(originalPackage));
+    when(packagesRmApiService.retrievePackage(packageId)).thenReturn(completedFuture(originalPackage));
 
     var packageUpdateFuture = packageService.updatePackage(packageId, entity, context);
     var exception = assertThrows(TestFutureFailedException.class, () -> result(packageUpdateFuture));
@@ -219,7 +220,7 @@ class PackageServiceTest {
     var entity = buildPutRequest(true, "access-type-id");
     var packagePut = mock(PackagePut.class);
     var accessType = new AccessType();
-    when(packagesRmApiService.retrievePackage(3964)).thenReturn(completedFuture(originalPackage));
+    when(packagesRmApiService.retrievePackage(packageId)).thenReturn(completedFuture(originalPackage));
     when(packageAccessTypeService.fetchAccessType("access-type-id", context)).thenReturn(completedFuture(accessType));
     when(requestConvertionService.convertCustomPackagePutRequest(entity)).thenReturn(packagePut);
     when(packagesRmApiService.updatePackage(3964, packagePut)).thenReturn(completedFuture(null));
@@ -241,7 +242,7 @@ class PackageServiceTest {
     var packagePut = mock(PackagePut.class);
     var notFound = new ResourceNotFoundException("not found", 404, "Not Found", "", "query");
     var failedRetrieve = CompletableFuture.<PackageData>failedFuture(notFound);
-    when(packagesRmApiService.retrievePackage(3964))
+    when(packagesRmApiService.retrievePackage(packageId))
       .thenReturn(completedFuture(originalPackage))
       .thenReturn(failedRetrieve);
     when(requestConvertionService.convertCustomPackagePutRequest(entity)).thenReturn(packagePut);
@@ -260,7 +261,7 @@ class PackageServiceTest {
   void shouldThrowWhenDeletingNonCustomPackage() {
     var packageId = new PackageId(19, 3964);
     var packageData = PackageData.builder().vendorId(19).packageId(3964).isCustom(false).build();
-    when(packagesRmApiService.retrievePackage(3964)).thenReturn(completedFuture(packageData));
+    when(packagesRmApiService.retrievePackage(packageId)).thenReturn(completedFuture(packageData));
 
     var packageDeletionFuture = packageService.deletePackage(packageId, context);
     var exception = assertThrows(TestFutureFailedException.class, () -> result(packageDeletionFuture));
@@ -273,7 +274,7 @@ class PackageServiceTest {
   void shouldDeleteCustomPackageAndAssignedResources() {
     var packageId = new PackageId(19, 3964);
     var packageData = PackageData.builder().vendorId(19).packageId(3964).isCustom(true).build();
-    when(packagesRmApiService.retrievePackage(3964)).thenReturn(completedFuture(packageData));
+    when(packagesRmApiService.retrievePackage(packageId)).thenReturn(completedFuture(packageData));
     when(packagesRmApiService.deletePackage(3964)).thenReturn(completedFuture(null));
     when(packageAccessTypeService.updateRecordMapping(null, "19-3964", context)).thenReturn(completedFuture(null));
     when(packageTagsService.deletePackageTags(eq(packageId), any(), eq(TENANT))).thenReturn(completedFuture(null));

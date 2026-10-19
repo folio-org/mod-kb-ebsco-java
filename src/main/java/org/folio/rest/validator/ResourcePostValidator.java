@@ -3,8 +3,6 @@ package org.folio.rest.validator;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.holdingsiq.model.PackageData;
-import org.folio.holdingsiq.model.Title;
-import org.folio.holdingsiq.model.Titles;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ResourcePostDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePostRequest;
@@ -23,18 +21,13 @@ public class ResourcePostValidator {
     ValidatorUtil.checkIsNotBlank("Title Id", attributes.getTitleId());
   }
 
-  public void validateRelatedObjects(PackageData packageData, Title title, Titles existingTitles) {
+  public void validateRelatedObjects(PackageData packageData, boolean titleInPackage) {
     if (BooleanUtils.isNotTrue(packageData.getIsCustom())) {
       throw new InputValidationException("Invalid PackageId",
         "Packageid Cannot associate Title with a managed Package");
     }
-    if (titleExists(title, existingTitles)) {
+    if (titleInPackage) {
       throw new InputValidationException("Invalid Title", "Package already associated with Title");
     }
-  }
-
-  private boolean titleExists(Title title, Titles existingTitles) {
-    return existingTitles.getTitleList().stream()
-      .anyMatch(existingTitle -> existingTitle.getTitleId().equals(title.getTitleId()));
   }
 }
