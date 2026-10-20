@@ -15,6 +15,7 @@
 * Sanitize HTML content for the package description field ([MODKBEKBJ-860](https://folio-org.atlassian.net/browse/MODKBEKBJ-860))
 * Validate blank package url and remove invalid format checks ([MODKBEKBJ-863](https://folio-org.atlassian.net/browse/MODKBEKBJ-863))
 * Add managed and custom subjects to package detail record ([MODKBEKBJ-853](https://folio-org.atlassian.net/browse/MODKBEKBJ-853))
+* Support visibleSomewhere and hiddenSomewhere for package visibility filter ([MODKBEKBJ-865](https://folio-org.atlassian.net/browse/MODKBEKBJ-865))
 * Add subjects (major headings) facet and `filter[subject]` to packages search ([MODKBEKBJ-850](https://folio-org.atlassian.net/browse/MODKBEKBJ-850))
 
 ### Bug fixes
