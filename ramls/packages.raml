@@ -48,6 +48,22 @@ types:
             - true
         example: "true"
         required: false
+      filter[subject]:
+        displayName: Subject
+        type: string[]
+        description: |
+          Filter to narrow down results based on subject ids (major headings).
+          Each value must be an integer subject id (for example 26224).
+          The parameter is repeatable (AND semantics): only packages that have all of the specified subjects are returned.
+        required: false
+      subjectFacetCount:
+        displayName: Subject Facet Count
+        type: integer
+        description: |
+          Maximum number of subject facet values to return in the response.
+          If not specified (or lower than 1), the default value of the HoldingsIQ client is used.
+        example: 1000
+        required: false
     responses:
       200:
         description: OK

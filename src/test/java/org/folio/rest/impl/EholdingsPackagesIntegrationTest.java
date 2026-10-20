@@ -66,6 +66,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackagePut;
@@ -88,6 +89,9 @@ import org.folio.util.TagsTestUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
 
@@ -110,6 +114,8 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
     "responses/rmapi/packages/get-packages-response.json";
   private static final String GET_PACKAGES_BY_PROVIDER_RESPONSE =
     "responses/rmapi/packages/get-packages-by-provider-id.json";
+  private static final String GET_PACKAGES_WITH_SUBJECT_FACETS_RESPONSE =
+    "responses/rmapi/packages/get-packages-with-subject-facets-response.json";
   private static final String GET_PACKAGE_PROVIDER_RESPONSE =
     "responses/rmapi/packages/get-package-provider-by-id.json";
   private static final String POST_PACKAGE_CREATED_RESPONSE =
@@ -216,6 +222,60 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
   }
 
   @Test
+  void shouldReturnSubjectFacetsAndSendSubjectFilterToRmApi() {
+    mockGet(matching(packagesRmApi() + ".*"), readFile(GET_PACKAGES_WITH_SUBJECT_FACETS_RESPONSE));
+
+    var actual = getWithOk(packagesPath() + "?q=foo&filter[subject]=1&filter[subject]=2")
+      .as(PackageCollection.class);
+
+    var subjects = actual.getFacets().getSubjects();
+    assertEquals(2, subjects.size());
+    assertEquals(3, subjects.get(0).getId());
+    assertEquals("History", subjects.get(0).getName());
+    assertEquals(20, subjects.get(0).getCount());
+    assertEquals(1, subjects.get(1).getId());
+    assertEquals("Science", subjects.get(1).getName());
+    assertEquals(10, subjects.get(1).getCount());
+    wm.verify(1, getRequestedFor(urlPathEqualTo(packagesRmApi()))
+      .withQueryParam("facetstoinclude", WireMock.equalTo("subject"))
+      .withQueryParam("subjectfacetcount", WireMock.equalTo("1000"))
+      .withQueryParam("subjectfilter", WireMock.equalTo("1,2")));
+  }
+
+  @Test
+  void shouldSendSubjectFacetCountToRmApi() {
+    mockGet(matching(packagesRmApi() + ".*"), readFile(GET_PACKAGES_WITH_SUBJECT_FACETS_RESPONSE));
+
+    getWithOk(packagesPath() + "?q=foo&subjectFacetCount=50");
+
+    wm.verify(1, getRequestedFor(urlPathEqualTo(packagesRmApi()))
+      .withQueryParam("subjectfacetcount", WireMock.equalTo("50")));
+  }
+
+  @Test
+  void shouldSendSubjectFilterToRmApiWhenCombinedWithTagsFilter() {
+    mockGet(matching(packagesRmApi() + ".*"), readFile(GET_PACKAGES_WITH_SUBJECT_FACETS_RESPONSE));
+
+    getWithOk(packagesPath() + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[subject]=1");
+
+    wm.verify(1, getRequestedFor(urlPathEqualTo(packagesRmApi()))
+      .withQueryParam("subjectfilter", WireMock.equalTo("1")));
+  }
+
+  @Test
+  void shouldRequestSubjectFacetsWithoutSearchOrFilterAndReturnNullFacetsWhenAbsent() {
+    mockGet(matching(packagesRmApi() + ".*"), readFile(GET_PACKAGES_BY_PROVIDER_RESPONSE));
+
+    var actual = getWithOk(packagesPath()).as(PackageCollection.class);
+
+    assertNull(actual.getFacets());
+    wm.verify(1, getRequestedFor(urlPathEqualTo(packagesRmApi()))
+      .withQueryParam("facetstoinclude", WireMock.equalTo("subject"))
+      .withQueryParam("subjectfacetcount", WireMock.equalTo("1000"))
+      .withQueryParam("subjectfilter", WireMock.absent()));
+  }
+
+  @Test
   void shouldReturnPackagesOnSearchByTagsOnly() {
     saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
     saveTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
@@ -297,20 +357,12 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
     assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
   }
 
-  @Test
-  void shouldReturn400OnInvalidFilterCustomParameter() {
-    var resourcePath = packagesPath() + "?filter[custom]=test";
-    var response = getWithStatus(resourcePath, SC_BAD_REQUEST).asString();
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("invalidFilterParameters")
+  void shouldReturn400OnInvalidFilterParameter(String name, String queryParam, String expectedMessage) {
+    var response = getWithStatus(packagesPath() + "?" + queryParam, SC_BAD_REQUEST).asString();
 
-    assertTrue(response.contains("Invalid Query Parameter for filter[custom]: only 'true' is supported"));
-  }
-
-  @Test
-  void shouldReturn400OnNotSupportedFilterCustomParameter() {
-    var resourcePath = packagesPath() + "?filter[custom]=false";
-    var response = getWithStatus(resourcePath, SC_BAD_REQUEST).asString();
-
-    assertTrue(response.contains("Invalid Query Parameter for filter[custom]: only 'true' is supported"));
+    assertTrue(response.contains(expectedMessage));
   }
 
   @Test
@@ -1141,6 +1193,16 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
       .packageId(packageId)
       .vendorId(providerId)
       .build());
+  }
+
+  static Stream<Arguments> invalidFilterParameters() {
+    var customMessage = "Invalid Query Parameter for filter[custom]: only 'true' is supported";
+    var subjectMessage = "Invalid Query Parameter for filter[subject]: only numeric subject ids are supported";
+    return Stream.of(
+      Arguments.of("invalid filter[custom]", "filter[custom]=test", customMessage),
+      Arguments.of("not supported filter[custom]", "filter[custom]=false", customMessage),
+      Arguments.of("non-numeric filter[subject]", "filter[subject]=test", subjectMessage)
+    );
   }
 
   private void setUpPackages(Vertx vertx, String credentialsId) {

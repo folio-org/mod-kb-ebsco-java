@@ -4,15 +4,15 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import org.jspecify.annotations.NonNull;
 
-public record FilterValidatorLogic<F extends Filter>(
-  Function<F, String> extractor,
-  Predicate<String> validator,
+public record FilterValidatorLogic<F extends Filter, P>(
+  Function<F, P> extractor,
+  Predicate<P> validator,
   String errorMessage
 ) {
 
-  public static <F extends Filter> FilterValidatorLogic<F> of(@NonNull Function<F, String> extractor,
-                                                              @NonNull Predicate<String> validator,
-                                                              @NonNull String errorMessage) {
+  public static <F extends Filter, P> FilterValidatorLogic<F, P> of(@NonNull Function<F, P> extractor,
+                                                                    @NonNull Predicate<P> validator,
+                                                                    @NonNull String errorMessage) {
     return new FilterValidatorLogic<>(extractor, validator, errorMessage);
   }
 }

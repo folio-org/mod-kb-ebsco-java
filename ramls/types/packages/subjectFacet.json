@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Subject facet schema",
+  "description": "Subject (major heading) facet schema for a package collection",
+  "javaType": "org.folio.rest.jaxrs.model.SubjectFacetDto",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier of subject",
+      "example": 26224
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of subject",
+      "example": "Science"
+    },
+    "schema": {
+      "type": "string",
+      "description": "Subject schema the subject belongs to",
+      "example": "BISAC"
+    },
+    "count": {
+      "type": "integer",
+      "description": "Total count of search results associated with the subject",
+      "example": 12
+    }
+  }
+}

@@ -1,6 +1,8 @@
 package org.folio.rest.model.filter;
 
 import static java.util.Arrays.asList;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.folio.common.ListUtils.mapItemsNullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +42,9 @@ public class PackageRecordFilter implements Filter {
   int count;
   List<String> filterTags;
   List<String> filterAccessType;
+  List<String> filterSubject;
+  Integer subjectFacetCount;
+  boolean includeSubjectFacet;
 
   public static PackageRecordFilterBuilder builder() {
     return new PackageRecordFilterBuilder() {
@@ -83,7 +88,7 @@ public class PackageRecordFilter implements Filter {
 
   @Override
   public List<String> searchCriteriaValues() {
-    return asList(query, filterCustom, filterSelected);
+    return asList(query, filterCustom, filterSelected, isEmpty(filterSubject) ? null : String.join(",", filterSubject));
   }
 
   public Integer parseProviderId() {
@@ -104,6 +109,9 @@ public class PackageRecordFilter implements Filter {
       .filterType(getPackageFilterType().orElse(null))
       .filterPackageFreeAccess(getPackageFilterFreeAccess().orElse(null))
       .filterVisibility(getPackageFilterVisibility().orElse(null))
+      .includeSubjectFacet(includeSubjectFacet)
+      .subjectFacetCount(subjectFacetCount)
+      .filterSubjectIds(mapItemsNullable(filterSubject, Integer::valueOf))
       .build();
   }
 }
