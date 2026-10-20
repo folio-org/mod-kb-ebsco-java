@@ -444,6 +444,28 @@
       }
     }
   ],
+  "facets": {
+    "subjects": [
+      {
+        "id": 26224,
+        "name": "Science",
+        "schema": "BISAC",
+        "count": 8
+      },
+      {
+        "id": 28289,
+        "name": "History",
+        "schema": "BISAC",
+        "count": 5
+      },
+      {
+        "id": 31507,
+        "name": "Medical",
+        "schema": "BISAC",
+        "count": 3
+      }
+    ]
+  },
   "meta": {
     "totalResults": 11
   },
