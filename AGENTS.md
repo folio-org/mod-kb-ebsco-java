@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Overview
 
-`mod-kb-ebsco-java` is a FOLIO backend module (Java 21, Maven) that brokers between FOLIO and the EBSCO HoldingsIQ (RM API) knowledge base: providers, packages, titles, resources, holdings, custom labels, access types, tags, assigned users, KB credentials, and Usage Consolidation (cost-per-use). It is built on **RestMicroserviceBuilder (RMB)** + Vert.x, with Spring for dependency injection. The external HoldingsIQ client lives in the separate `folio-holdingsiq-client` library (version pinned in `pom.xml`; currently a SNAPSHOT, so it may need to be built/installed locally from `../folio-holdingsiq-client`).
+`mod-kb-ebsco-java` is a FOLIO backend module (Java 21, Maven) that brokers between FOLIO and the EBSCO HoldingsIQ (RM API) knowledge base: providers, packages, titles, resources, holdings, custom labels, access types, tags, assigned users, KB credentials, and Usage Consolidation (cost-per-use). It is built on **RAML Module Builder (RMB)** (`domain-models-runtime`) + Vert.x, with Spring for dependency injection. The external HoldingsIQ client lives in the separate `folio-holdingsiq-client` library, whose version is set by `folio-holdingsiq-client.version` in `pom.xml`. That version may be a release or a SNAPSHOT. If a SNAPSHOT isn't resolvable from the FOLIO Maven repository, build and install the library locally from its own repository; its default local location is `../folio-holdingsiq-client` (relative to this project), but the local repository may be located elsewhere or not exist at all.
 
 ## Commands
 
