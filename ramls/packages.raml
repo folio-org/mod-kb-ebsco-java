@@ -54,7 +54,7 @@ types:
         description: |
           Filter to narrow down results based on subject ids (major headings).
           Each value must be an integer subject id (for example 26224).
-          The parameter is repeatable (OR semantics): packages that have any of the specified subjects are returned.
+          The parameter is repeatable (AND semantics): only packages that have all of the specified subjects are returned.
         required: false
       subjectFacetCount:
         displayName: Subject Facet Count
