@@ -88,8 +88,16 @@
     },
     "visibilityData": {
       "type": "object",
-      "description": "Visibility data. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
+      "description": "Visibility data applied to all categories (PF, FTF, MARC). Ignored when visibility is set. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
       "$ref": "../visibilityData.json"
+    },
+    "visibility": {
+      "type": "array",
+      "description": "Visibility per category (PF, FTF, MARC); only the sent categories are changed. Takes precedence over visibilityData. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
+      "items": {
+        "type": "object",
+        "$ref": "../visibility.json"
+      }
     },
     "managedCoverages": {
       "type": "array",

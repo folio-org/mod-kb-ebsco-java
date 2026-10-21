@@ -1,5 +1,5 @@
 {
-  "titleId": 19412030,
+  "kbid": 19412030,
   "titleName": "sd-test-java-again",
   "publisherName": "Not Empty",
   "identifiersList": [
@@ -12,50 +12,6 @@
   "subjectsList": [],
   "isTitleCustom": true,
   "pubType": "book",
-  "customerResourcesList": [
-    {
-      "titleId": 19412030,
-      "packageId": 3157070,
-      "packageName": "Andrii custom package ",
-      "packageType": "Custom",
-      "proxy": {
-        "id": "Proxy-ID-234",
-        "inherited": false
-      },
-      "isPackageCustom": true,
-      "vendorId": 123356,
-      "vendorName": "API DEV GOVERNMENT CUSTOMER",
-      "locationId": 43006476,
-      "isSelected": true,
-      "isTokenNeeded": false,
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
-      "managedCoverageList": [],
-      "customCoverageList": [
-        {
-          "beginCoverage": "2018-01-10",
-          "endCoverage": "2018-01-11"
-        }
-      ],
-      "coverageStatement": "My test statement",
-      "managedEmbargoPeriod": {
-        "embargoUnit": null,
-        "embargoValue": 0
-      },
-      "customEmbargoPeriod": {
-        "embargoUnit": "Weeks",
-        "embargoValue": 30
-      },
-      "url": "https://hello",
-      "userDefinedField1": "test 1",
-      "userDefinedField2": "test 2",
-      "userDefinedField3": "",
-      "userDefinedField4": null,
-      "userDefinedField5": "test 5"
-    }
-  ],
   "description": "test description",
   "edition": "test edition",
   "isPeerReviewed": true,
@@ -63,6 +19,58 @@
     {
       "type": "author",
       "contributor": "Rappaport, Helen"
+    }
+  ],
+  "listId": 3157070,
+  "packageName": "Andrii custom package ",
+  "packageType": "Custom",
+  "proxy": {
+    "id": "Proxy-ID-234",
+    "inherited": false
+  },
+  "isPackageCustom": true,
+  "vendorId": 123356,
+  "vendorName": "API DEV GOVERNMENT CUSTOMER",
+  "locationId": 43006476,
+  "isSelected": true,
+  "isTokenNeeded": false,
+  "managedCoverageList": [],
+  "customCoverageList": [
+    {
+      "beginCoverage": "2018-01-10",
+      "endCoverage": "2018-01-11"
+    }
+  ],
+  "coverageStatement": "My test statement",
+  "managedEmbargoPeriod": {
+    "embargoUnit": null,
+    "embargoValue": 0
+  },
+  "customEmbargoPeriod": {
+    "embargoUnit": "Weeks",
+    "embargoValue": 30
+  },
+  "url": "https://hello",
+  "userDefinedField1": "test 1",
+  "userDefinedField2": "test 2",
+  "userDefinedField3": "",
+  "userDefinedField4": null,
+  "userDefinedField5": "test 5",
+  "visibility": [
+    {
+      "category": "PF",
+      "hidden": false,
+      "reason": ""
+    },
+    {
+      "category": "FTF",
+      "hidden": false,
+      "reason": ""
+    },
+    {
+      "category": "MARC",
+      "hidden": false,
+      "reason": ""
     }
   ]
 }

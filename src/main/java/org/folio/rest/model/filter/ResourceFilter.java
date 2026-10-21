@@ -5,8 +5,9 @@ import static java.util.Arrays.asList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Value;
-import org.folio.holdingsiq.model.FilterQuery;
+import org.folio.holdingsiq.model.FilterSelected;
 import org.folio.holdingsiq.model.PackageId;
+import org.folio.holdingsiq.model.TitleFilterType;
 import org.folio.repository.RecordType;
 import org.folio.rest.util.IdParser;
 
@@ -14,13 +15,15 @@ import org.folio.rest.util.IdParser;
 @Builder
 public class ResourceFilter implements Filter {
 
+  private static final FilterValidator<ResourceFilter> VALIDATOR = new ResourceFilterValidator();
+
   String packageId;
+  String query;
+  String queryField;
+
   String filterSelected;
   String filterType;
-  String filterName;
-  String filterIsxn;
-  String filterSubject;
-  String filterPublisher;
+  String filterAccess;
   String sort;
   int page;
   int count;
@@ -34,26 +37,26 @@ public class ResourceFilter implements Filter {
 
   @Override
   public List<String> searchCriteriaValues() {
-    return asList(filterIsxn, filterName, filterPublisher, filterSubject, filterSelected);
+    return asList(query, filterSelected);
   }
 
   public PackageId parsePackageId() {
     return IdParser.parsePackageId(packageId);
   }
 
-  public String resolveFilterSelected() {
+  public FilterSelected resolveFilterSelected() {
     return Filter.mapFilterSelected(filterSelected);
   }
 
-  public FilterQuery createFilterQuery() {
-    return FilterQuery.builder()
-        .type(filterType)
-        .name(filterName)
-        .isxn(filterIsxn)
-        .subject(filterSubject)
-        .publisher(filterPublisher)
-        .selected(resolveFilterSelected())
-        .build();
+  public org.folio.holdingsiq.model.ResourceFilter toClientFilter() {
+    var search = TitleSearch.of(query, queryField);
+    return org.folio.holdingsiq.model.ResourceFilter.builder()
+      .query(search.query())
+      .searchField(search.searchField())
+      .filterSelected(resolveFilterSelected())
+      .filterType(TitleFilterType.fromValue(filterType))
+      .filterPackageFreeAccess(Filter.mapFilterAccess(filterAccess))
+      .build();
   }
 
   public static ResourceFilterBuilder builder() {
@@ -61,7 +64,7 @@ public class ResourceFilter implements Filter {
       @Override
       public ResourceFilter build() {
         ResourceFilter filter = super.build();
-        FilterValidators.validateResource(filter);
+        VALIDATOR.validate(filter);
         return filter;
       }
     };

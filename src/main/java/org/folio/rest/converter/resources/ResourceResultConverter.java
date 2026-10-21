@@ -1,8 +1,6 @@
 package org.folio.rest.converter.resources;
 
 import static java.util.Objects.requireNonNull;
-import static org.apache.commons.collections4.IterableUtils.matchesAny;
-import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.resources.ResourceConverterUtils.createEmptyRelationship;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
@@ -10,8 +8,7 @@ import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
-import org.folio.holdingsiq.model.CustomerResources;
+import org.apache.commons.lang3.BooleanUtils;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.AccessType;
@@ -23,10 +20,11 @@ import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.Title;
+import org.folio.rest.util.IdParser;
 import org.folio.rest.util.RestConstants;
+import org.folio.rmapi.ResourceMapper;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.TitleResult;
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -35,8 +33,6 @@ import org.springframework.stereotype.Component;
 @SuppressWarnings("java:S6813")
 public class ResourceResultConverter implements Converter<ResourceResult, List<Resource>> {
 
-  @Autowired
-  private Converter<org.folio.holdingsiq.model.Title, ResourceCollectionItem> resourceCollectionItemConverter;
   @Autowired
   private CommonResourceConverter commonResourceConverter;
   @Autowired
@@ -48,55 +44,37 @@ public class ResourceResultConverter implements Converter<ResourceResult, List<R
 
   @Override
   public List<Resource> convert(ResourceResult resourceResult) {
-    var rmapiTitle = resourceResult.getTitle();
-    PackageData packageData = resourceResult.getPackageData();
-    VendorById vendor = resourceResult.getVendor();
-    AccessType accessType = resourceResult.getAccessType();
-    boolean includeTitle = resourceResult.isIncludeTitle();
+    var rmapiResource = resourceResult.getResource();
+    Resource resultResource = new Resource()
+      .withData(new ResourceCollectionItem()
+        .withId(IdParser.getResourceId(rmapiResource))
+        .withType(ResourceCollectionItem.Type.RESOURCES)
+        .withAttributes(commonResourceConverter.createResourceDataAttributes(rmapiResource))
+        .withRelationships(createEmptyRelationship())
+      )
+      .withIncluded(null)
+      .withJsonapi(RestConstants.JSONAPI);
 
-    List<CustomerResources> customerResourcesList = rmapiTitle.getCustomerResourcesList();
-    boolean titleHasSelectedResources = matchesAny(customerResourcesList, CustomerResources::getIsSelected);
-    return mapItems(customerResourcesList,
-      convertToResource(rmapiTitle, titleHasSelectedResources, includeTitle, vendor, packageData, accessType));
+    // the resource is the only package of its title in the response, so it decides whether a resource is selected
+    resultResource.getData().getAttributes()
+      .setTitleHasSelectedResources(BooleanUtils.isTrue(rmapiResource.getIsSelected()));
+    includedResources(resourceResult, resultResource);
+    return List.of(resultResource);
   }
 
-  private Function<CustomerResources, Resource> convertToResource(org.folio.holdingsiq.model.Title rmapiTitle,
-                                                                  boolean titleHasSelectedResources,
-                                                                  boolean includeTitle,
-                                                                  VendorById vendor, PackageData packageData,
-                                                                  AccessType accessType) {
-    return resource -> {
-      Resource resultResource = new Resource()
-        .withData(new ResourceCollectionItem()
-          .withId(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId())
-          .withType(ResourceCollectionItem.Type.RESOURCES)
-          .withAttributes(commonResourceConverter.createResourceDataAttributes(rmapiTitle, resource))
-          .withRelationships(createEmptyRelationship())
-        )
-        .withIncluded(null)
-        .withJsonapi(RestConstants.JSONAPI);
-
-      resultResource.getData().getAttributes().setTitleHasSelectedResources(titleHasSelectedResources);
-      includedResources(rmapiTitle, includeTitle, vendor, packageData, accessType, resultResource);
-      return resultResource;
-    };
-  }
-
-  private void includedResources(org.folio.holdingsiq.model.Title rmapiTitle, boolean includeTitle,
-                                 @Nullable VendorById vendor, @Nullable PackageData packageData,
-                                 @Nullable AccessType accessType, Resource resultResource) {
+  private void includedResources(ResourceResult resourceResult, Resource resultResource) {
     resultResource.setIncluded(new ArrayList<>());
-    if (includeTitle) {
-      includeTitle(rmapiTitle, resultResource);
+    if (resourceResult.isIncludeTitle()) {
+      includeTitle(resourceResult.getResource(), resultResource);
     }
-    if (vendor != null) {
-      includeVendor(vendor, resultResource);
+    if (resourceResult.getVendor() != null) {
+      includeVendor(resourceResult.getVendor(), resultResource);
     }
-    if (packageData != null) {
-      includePackage(packageData, resultResource);
+    if (resourceResult.getPackageData() != null) {
+      includePackage(resourceResult.getPackageData(), resultResource);
     }
-    if (accessType != null) {
-      includeAccessType(accessType, resultResource);
+    if (resourceResult.getAccessType() != null) {
+      includeAccessType(resourceResult.getAccessType(), resultResource);
     }
   }
 
@@ -132,7 +110,9 @@ public class ResourceResultConverter implements Converter<ResourceResult, List<R
           .withType(PROVIDERS_TYPE)));
   }
 
-  private void includeTitle(org.folio.holdingsiq.model.Title rmapiTitle, Resource resultResource) {
+  private void includeTitle(org.folio.holdingsiq.model.Resource rmapiResource, Resource resultResource) {
+    // relationships are part of the resource attributes, so they are not repeated in the included title
+    var rmapiTitle = ResourceMapper.toTitle(rmapiResource).toBuilder().titleRelationships(null).build();
     Title title = requireNonNull(titlesConverter.convert(new TitleResult(rmapiTitle, false)));
     resultResource.getIncluded().add(title.getData());
     resultResource.getData()

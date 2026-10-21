@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Title Relationship Schema",
+  "description": "Relationship between two titles",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.TitleRelationship",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Relationship id",
+      "example": 42
+    },
+    "type": {
+      "type": "string",
+      "description": "Relationship type, e.g. ABSORBED_BY, CONTINUED_BY, PARENT_OF",
+      "example": "CONTINUED_BY"
+    },
+    "date": {
+      "type": "string",
+      "description": "Relationship date in ISO-8601 format",
+      "example": "2020-01-01T00:00:00Z"
+    },
+    "source": {
+      "type": "object",
+      "description": "Title the relationship starts from",
+      "$ref": "relatedTitle.json"
+    },
+    "target": {
+      "type": "object",
+      "description": "Title the relationship points to",
+      "$ref": "relatedTitle.json"
+    }
+  }
+}

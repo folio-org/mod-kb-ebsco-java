@@ -3,12 +3,14 @@ package org.folio.rest.validator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
+import org.folio.rest.jaxrs.model.Visibility;
 import org.folio.rest.jaxrs.model.VisibilityData;
 import org.folio.util.ResourcesTestUtil;
 import org.junit.jupiter.api.Test;
@@ -61,6 +63,26 @@ class ResourcePutBodyValidatorTest {
         .withVisibilityData(new VisibilityData().withIsHidden(true)));
     var exception = assertThrows(InputValidationException.class, () -> validator.validate(request, false));
     assertEquals("Resource cannot be updated unless added to holdings", exception.getMessage());
+  }
+
+  @Test
+  void shouldThrowExceptionWhenResourceIsNotSelectedAndCategoryIsHidden() {
+    var request = ResourcesTestUtil.getResourcePutRequest(
+      new ResourcePutDataAttributes()
+        .withIsSelected(false)
+        .withVisibility(List.of(
+          new Visibility().withCategory(Visibility.Category.PF).withHidden(false),
+          new Visibility().withCategory(Visibility.Category.MARC).withHidden(true))));
+    var exception = assertThrows(InputValidationException.class, () -> validator.validate(request, false));
+    assertEquals("Resource cannot be updated unless added to holdings", exception.getMessage());
+  }
+
+  @Test
+  void shouldNotThrowExceptionWhenResourceIsNotSelectedAndNoCategoryIsHidden() {
+    validator.validate(ResourcesTestUtil.getResourcePutRequest(
+      new ResourcePutDataAttributes()
+        .withIsSelected(false)
+        .withVisibility(List.of(new Visibility().withCategory(Visibility.Category.PF).withHidden(false)))), false);
   }
 
   @Test

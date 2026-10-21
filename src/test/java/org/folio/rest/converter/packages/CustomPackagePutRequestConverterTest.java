@@ -13,7 +13,7 @@ import java.util.List;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
-import org.folio.rest.jaxrs.model.PackageVisibility;
+import org.folio.rest.jaxrs.model.Visibility;
 import org.folio.service.sanitizer.Sanitizer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -86,9 +86,9 @@ class CustomPackagePutRequestConverterTest {
     var packagePut =
       converter.convert(getPackagePutRequest(
         new PackagePutDataAttributes()
-          .withVisibility(List.of(new PackageVisibility()
+          .withVisibility(List.of(new Visibility()
             .withHidden(true)
-            .withCategory(PackageVisibility.Category.PF)))
+            .withCategory(Visibility.Category.PF)))
       ));
     var visibility = packagePut.getVisibilityDetails().getFirst();
     assertTrue(visibility.hidden());
@@ -100,10 +100,10 @@ class CustomPackagePutRequestConverterTest {
     var packagePut =
       converter.convert(getPackagePutRequest(
         new PackagePutDataAttributes()
-          .withVisibility(List.of(new PackageVisibility()
+          .withVisibility(List.of(new Visibility()
             .withHidden(false)
             .withReason("some incoming reason")
-            .withCategory(PackageVisibility.Category.PF)))
+            .withCategory(Visibility.Category.PF)))
       ));
     var visibility = packagePut.getVisibilityDetails().getFirst();
     assertFalse(visibility.hidden());

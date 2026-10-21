@@ -99,9 +99,27 @@
       "description": "Defines if package is custom",
       "example": false
     },
+    "packageType": {
+      "type": "string",
+      "readonly": true,
+      "description": "Package type",
+      "example": "Complete"
+    },
+    "isPrimaryPackage": {
+      "type": "boolean",
+      "readonly": true,
+      "description": "Defines if the package is the primary package of the provider",
+      "example": false
+    },
     "isSelected": {
       "type": "boolean",
       "description": "Defines if this item is selected. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
+      "example": false
+    },
+    "isOrderedThroughEbsco": {
+      "type": "boolean",
+      "readonly": true,
+      "description": "Defines if the resource is ordered through EBSCO",
       "example": false
     },
     "titleHasSelectedResources": {
@@ -114,6 +132,12 @@
       "readonly": true,
       "description": "Defines if token is needed",
       "example": false
+    },
+    "customCoverageOwnership": {
+      "type": "string",
+      "readonly": true,
+      "description": "Custom coverage ownership of the resource",
+      "example": "customer"
     },
     "locationId": {
       "type": "integer",
@@ -160,6 +184,15 @@
       "type": "object",
       "description": "Visibility data. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
       "$ref": "../visibilityData.json"
+    },
+    "visibility": {
+      "type": "array",
+      "readonly": true,
+      "description": "Visibility per category (PF, FTF, MARC). visibilityData is hidden when at least one category is hidden",
+      "items": {
+        "type": "object",
+        "$ref": "../visibility.json"
+      }
     },
     "managedCoverages": {
       "type": "array",
@@ -214,6 +247,15 @@
       "type": "string",
       "description": "User defined field 5",
       "maxLength": 100
+    },
+    "titleRelationships": {
+      "type": "array",
+      "description": "Title relationships. Returned only when requested with include=relationships",
+      "items": {
+        "type": "object",
+        "$ref": "../titles/titleRelationship.json"
+      },
+      "readonly": true
     }
   }
 }

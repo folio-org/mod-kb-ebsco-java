@@ -6,6 +6,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Coverage;
@@ -74,12 +75,12 @@ public class ResourcePutBodyValidator {
 
   private void validateManagedResourceIfNotSelected(ResourcePutDataAttributes attributes, boolean isTitleCustom,
                                                     String cvgStmt) {
-    Boolean isHidden = attributes.getVisibilityData() != null ? attributes.getVisibilityData().getIsHidden() : null;
+    boolean isHidden = isHidden(attributes);
     EmbargoUnit embargoUnit =
       attributes.getCustomEmbargoPeriod() != null ? attributes.getCustomEmbargoPeriod().getEmbargoUnit() : null;
     List<Coverage> customCoverages = attributes.getCustomCoverages();
     if (!isTitleCustom && (isNotEmpty(cvgStmt) || nonNull(embargoUnit)
-      || nonNull(isHidden) && isHidden
+      || isHidden
       || nonNull(customCoverages) && !customCoverages.isEmpty()
       || isNotEmpty(attributes.getUserDefinedField1())
       || isNotEmpty(attributes.getUserDefinedField2())
@@ -89,5 +90,11 @@ public class ResourcePutBodyValidator {
       throw new InputValidationException(INVALID_IS_SELECTED_TITLE, INVALID_IS_SELECTED_DETAILS);
     }
   }
-}
 
+  private boolean isHidden(ResourcePutDataAttributes attributes) {
+    if (CollectionUtils.isNotEmpty(attributes.getVisibility())) {
+      return attributes.getVisibility().stream().anyMatch(visibility -> Boolean.TRUE.equals(visibility.getHidden()));
+    }
+    return attributes.getVisibilityData() != null && Boolean.TRUE.equals(attributes.getVisibilityData().getIsHidden());
+  }
+}

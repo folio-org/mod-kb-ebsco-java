@@ -2,11 +2,14 @@ package org.folio.rest.model.filter;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.collections4.IterableUtils.matchesAll;
+import static org.folio.rest.util.RestConstants.FILTER_FREE_ACCESS_MAPPING;
 import static org.folio.rest.util.RestConstants.FILTER_SELECTED_MAPPING;
 
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.folio.holdingsiq.model.FilterFreeAccess;
+import org.folio.holdingsiq.model.FilterSelected;
 import org.folio.holdingsiq.model.Pageable;
 import org.folio.holdingsiq.model.Sort;
 import org.folio.repository.RecordType;
@@ -54,7 +57,11 @@ public sealed interface Filter permits ProviderFilter, PackageRecordFilter, Reso
   }
 
   // Shared utility for resolveFilterSelected (used by 3 implementations)
-  static String mapFilterSelected(String filterSelected) {
-    return filterSelected == null ? null : FILTER_SELECTED_MAPPING.get(filterSelected).getValue();
+  static FilterSelected mapFilterSelected(String filterSelected) {
+    return filterSelected == null ? null : FILTER_SELECTED_MAPPING.get(filterSelected);
+  }
+
+  static FilterFreeAccess mapFilterAccess(String filterAccess) {
+    return filterAccess == null ? null : FILTER_FREE_ACCESS_MAPPING.get(filterAccess);
   }
 }

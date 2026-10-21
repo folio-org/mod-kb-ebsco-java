@@ -1,6 +1,22 @@
 {
   "isSelected": true,
-  "isHidden": false,
+  "visibility": [
+    {
+      "category": "PF",
+      "hidden": false,
+      "reason": null
+    },
+    {
+      "category": "FTF",
+      "hidden": false,
+      "reason": null
+    },
+    {
+      "category": "MARC",
+      "hidden": false,
+      "reason": null
+    }
+  ],
   "coverageStatement": "My test statement",
   "customEmbargoPeriod": {
     "embargoUnit": "Weeks",
@@ -17,22 +33,29 @@
     "inherited": false
   },
   "url": "https://hello",
-  "contributorsList": [{
-    "type": "author",
-    "contributor": "Rappaport, Helen"
-  }],
-  "identifiersList": [{
-    "id": "978-1-280-71298-2",
-    "subtype": 2,
-    "type": 1
-  }],
-  "customCoverageList": [{
-   "beginCoverage": "2018-01-10",
-   "endCoverage": "2018-01-11"
-  }],
+  "contributorsList": [
+    {
+      "type": "author",
+      "contributor": "Rappaport, Helen"
+    }
+  ],
+  "identifiersList": [
+    {
+      "id": "978-1-280-71298-2",
+      "source": null,
+      "subtype": 2,
+      "type": 1
+    }
+  ],
+  "customCoverageList": [
+    {
+      "beginCoverage": "2018-01-10",
+      "endCoverage": "2018-01-11"
+    }
+  ],
   "userDefinedField1": "test 1",
   "userDefinedField2": "test 2",
   "userDefinedField3": "",
-  "userDefinedField4" : null,
+  "userDefinedField4": null,
   "userDefinedField5": "test 5"
 }

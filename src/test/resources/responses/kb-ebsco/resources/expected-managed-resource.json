@@ -44,6 +44,7 @@
         "embargoValue": 10
       },
       "isPackageCustom": false,
+      "packageType": "Variable",
       "isSelected": true,
       "isTokenNeeded": false,
       "locationId": 2863717,
@@ -59,6 +60,23 @@
         "isHidden": false,
         "reason": ""
       },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": "Hidden by Customer"
+        },
+        {
+          "category": "FTF",
+          "hidden": false,
+          "reason": "Hidden by Customer"
+        },
+        {
+          "category": "MARC",
+          "hidden": false,
+          "reason": "Hidden by Customer"
+        }
+      ],
       "managedCoverages": [
         {
           "beginCoverage": "2005-01-01",

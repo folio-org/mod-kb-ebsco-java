@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class ResourceServiceImplTest extends WireMockTestBase {
 
   private static final int PACKAGE_ID = 3964;
-  private static final int VENDOR_ID = 111111;
+  private static final int VENDOR_ID = 19;
   private static final int TITLE_ID = 985846;
 
   private static final String CUSTOM_RESOURCE_STUB_FILE =
@@ -24,7 +24,7 @@ class ResourceServiceImplTest extends WireMockTestBase {
 
   @Test
   void shouldReturnCachedResource() {
-    var getResourcePattern = equalTo(resourcesRmApi(VENDOR_ID, PACKAGE_ID, TITLE_ID));
+    var getResourcePattern = equalTo(resourcesRmApi(PACKAGE_ID, TITLE_ID));
 
     var configuration = getStubConfiguration();
     var service = new ResourcesServiceImpl(configuration, Vertx.vertx(), STUB_TENANT, null, null,

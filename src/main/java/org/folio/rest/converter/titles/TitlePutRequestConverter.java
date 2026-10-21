@@ -33,8 +33,8 @@ public class TitlePutRequestConverter {
   public ResourcePut convertToRmApiCustomResourcePutRequest(TitlePutRequest entity, CustomerResources oldResource) {
     ResourcePut.ResourcePutBuilder builder = ResourcePut.builder();
 
+    // visibility is left out: HoldingsIQ keeps the current visibility of all categories when it is omitted
     builder.proxy(convertProxy(oldResource));
-    builder.isHidden(oldResource.getVisibilityData().getIsHidden());
     builder.coverageStatement(oldResource.getCoverageStatement());
     builder.customEmbargoPeriod(oldResource.getCustomEmbargoPeriod());
     builder.customCoverageList(oldResource.getCustomCoverageList());

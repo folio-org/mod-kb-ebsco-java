@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class PackageServiceImplTest extends WireMockTestBase {
 
   private static final int PACKAGE_ID = 3964;
-  private static final int VENDOR_ID = 111111;
+  private static final int VENDOR_ID = 19;
   private static final String CUSTOM_PACKAGE_STUB_FILE =
     "responses/rmapi/packages/get-custom-package-by-id-response.json";
 
@@ -25,8 +25,8 @@ class PackageServiceImplTest extends WireMockTestBase {
     var getPackagePattern = equalTo(packageRmApi(PACKAGE_ID));
 
     var configuration = getStubConfiguration();
-    var service = new PackageServiceImpl(configuration, Vertx.vertx(), STUB_TENANT, null, null,
-      new VertxCache<>(Vertx.vertx(), 60, "packageCache"), null);
+    var service = new PackageServiceImpl(configuration, Vertx.vertx(), STUB_TENANT, null,
+      new VertxCache<>(Vertx.vertx(), 60, "packageCache"));
 
     mockGet(getPackagePattern, readFile(CUSTOM_PACKAGE_STUB_FILE));
 

@@ -1,6 +1,7 @@
 package org.folio.service.packages;
 
 import static java.util.stream.Collectors.toMap;
+import static org.folio.HttpStatus.SC_NOT_FOUND;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.IdParser.packageIdToString;
 
@@ -9,17 +10,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
-import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.PackagePost;
 import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Packages;
-import org.folio.holdingsiq.model.Titles;
+import org.folio.holdingsiq.model.Resources;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.properties.common.SearchProperties;
 import org.folio.repository.RecordKey;
@@ -33,11 +35,12 @@ import org.folio.rest.jaxrs.model.PackageTagsDataAttributes;
 import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.model.filter.PackageRecordFilter;
 import org.folio.rest.model.filter.ResourceFilter;
+import org.folio.rest.util.IdParser;
 import org.folio.rest.util.template.RmApiTemplateContext;
 import org.folio.rest.validator.packages.PackageValidationService;
 import org.folio.rmapi.result.PackageResult;
-import org.folio.rmapi.result.TitleCollectionResult;
-import org.folio.rmapi.result.TitleResult;
+import org.folio.rmapi.result.ResourceItemCollectionResult;
+import org.folio.rmapi.result.ResourceItemResult;
 import org.folio.service.loader.RelatedEntitiesLoader;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
@@ -57,7 +60,7 @@ public class PackageService {
   private final PackageTagsService packageTagsService;
   private final CustomProviderIdService customProviderIdService;
   private final RelatedEntitiesLoader relatedEntitiesLoader;
-  private final Converter<Titles, TitleCollectionResult> titleCollectionConverter;
+  private final Converter<Resources, ResourceItemCollectionResult> resourceItemCollectionConverter;
   private final SearchProperties searchProperties;
 
   public CompletableFuture<Packages> retrievePackages(Integer providerId, PackageRecordFilter filter,
@@ -78,13 +81,29 @@ public class PackageService {
   public Function<RmApiTemplateContext, CompletableFuture<?>> retrievePackageTitles(ResourceFilter filter) {
     return context -> {
       var pkgId = filter.parsePackageId();
-      return context.getTitlesService()
-        .retrieveTitles(pkgId.providerIdPart(), pkgId.packageIdPart(), filter.createFilterQuery(),
-          searchProperties.titlesSearchType(), filter.resolveSort(), filter.getPage(), filter.getCount())
-        .thenApply(titleCollectionConverter::convert)
+      return context.getResourcesService()
+        .retrieveResources(pkgId.packageIdPart(), filter.toClientFilter(), filter.toPageable())
+        .thenCompose(resources -> verifyPackage(resources, pkgId, context))
+        .thenApply(resourceItemCollectionConverter::convert)
         .thenCompose(loadResourceTags(context))
         .thenCompose(loadResourceAccessTypes(context));
     };
+  }
+
+  // HoldingsIQ v2 addresses a list by its id alone and answers 200 with an empty list for a missing package, so the
+  // provider is checked on the returned resources and the 404 for an empty list comes from the package lookup
+  private CompletableFuture<Resources> verifyPackage(Resources resources, PackageId packageId,
+                                                     RmApiTemplateContext context) {
+    if (CollectionUtils.isEmpty(resources.getTitles())) {
+      return context.getPackagesService().retrievePackage(packageId).thenApply(packageData -> resources);
+    }
+    var vendorId = resources.getTitles().getFirst().getVendorId();
+    if (vendorId != null && vendorId != packageId.providerIdPart()) {
+      return CompletableFuture.failedFuture(new ResourceNotFoundException(
+        "Package " + packageId.packageIdPart() + " not found for provider " + packageId.providerIdPart(),
+        SC_NOT_FOUND, "Not Found", null, null));
+    }
+    return CompletableFuture.completedFuture(resources);
   }
 
   public CompletableFuture<PackageResult> createCustomPackage(PackagePostRequest entity,
@@ -120,13 +139,12 @@ public class PackageService {
 
   public CompletableFuture<PackageResult> updatePackage(PackageId parsedPackageId, PackagePutRequest entity,
                                                         RmApiTemplateContext context) {
-    var packageIdPart = parsedPackageId.packageIdPart();
     String accessTypeId = entity.getData().getAttributes().getAccessTypeId();
-    return context.getPackagesService().retrievePackage(packageIdPart)
+    return context.getPackagesService().retrievePackage(parsedPackageId)
       .thenCompose(packageData -> packageAccessTypeService.fetchAccessType(accessTypeId, context)
         .thenCompose(accessType -> processUpdateRequest(entity, packageData, context)
           .thenCompose(voidEntity -> {
-            CompletableFuture<PackageData> future = context.getPackagesService().retrievePackage(packageIdPart);
+            CompletableFuture<PackageData> future = context.getPackagesService().retrievePackage(parsedPackageId);
             return handleDeletedPackage(future, parsedPackageId, context);
           })
           .thenApply(packageById -> new PackageResult(packageById, null, null))
@@ -137,7 +155,7 @@ public class PackageService {
 
   public CompletableFuture<Void> deletePackage(PackageId parsedPackageId, RmApiTemplateContext context) {
     var packageIdPart = parsedPackageId.packageIdPart();
-    return context.getPackagesService().retrievePackage(packageIdPart)
+    return context.getPackagesService().retrievePackage(parsedPackageId)
       .thenCompose(packageData -> {
         if (BooleanUtils.isNotTrue(packageData.getIsCustom())) {
           throw new InputValidationException(INVALID_PACKAGE_TITLE, INVALID_PACKAGE_DETAILS);
@@ -197,7 +215,8 @@ public class PackageService {
                                                               PackageId packageId, RmApiTemplateContext context) {
     CompletableFuture<Void> deleteFuture = new CompletableFuture<>();
     return future.whenComplete((packageById, e) -> {
-      if (e instanceof ResourceNotFoundException) {
+      var cause = e instanceof CompletionException ? e.getCause() : e;
+      if (cause instanceof ResourceNotFoundException) {
         deleteAssignedResources(packageId, context).thenAccept(o -> deleteFuture.complete(null));
       } else {
         deleteFuture.complete(null);
@@ -214,44 +233,39 @@ public class PackageService {
     return CompletableFuture.allOf(deleteAccessMapping, deleteTags);
   }
 
-  private Function<TitleCollectionResult, CompletionStage<TitleCollectionResult>> loadResourceTags(
+  private Function<ResourceItemCollectionResult, CompletionStage<ResourceItemCollectionResult>> loadResourceTags(
     RmApiTemplateContext context) {
-    return titleCollection -> {
-      Map<String, TitleResult> resourceIdToTitle = mapResourceIdToTitleResult(titleCollection);
-      return packageTagsService.loadResourceTags(context.getRequestContext().getTenant(), resourceIdToTitle)
-        .thenApply(v -> titleCollection);
+    return collection -> {
+      Map<String, ResourceItemResult> resourceIdToItem = mapResourceIdToItem(collection);
+      return packageTagsService.loadResourceTags(context.getRequestContext().getTenant(), resourceIdToItem)
+        .thenApply(v -> collection);
     };
   }
 
-  private Function<TitleCollectionResult, CompletionStage<TitleCollectionResult>> loadResourceAccessTypes(
-    RmApiTemplateContext context) {
-    return titleCollection -> {
-      Map<String, TitleResult> resourceIdToAccessType = mapResourceIdToTitleResult(titleCollection);
-      return relatedEntitiesLoader.loadAccessTypes(new ArrayList<>(resourceIdToAccessType.keySet()),
+  private Function<ResourceItemCollectionResult, CompletionStage<ResourceItemCollectionResult>>
+      loadResourceAccessTypes(RmApiTemplateContext context) {
+    return collection -> {
+      Map<String, ResourceItemResult> resourceIdToItem = mapResourceIdToItem(collection);
+      return relatedEntitiesLoader.loadAccessTypes(new ArrayList<>(resourceIdToItem.keySet()),
           RecordType.RESOURCE, context)
         .thenApply(accessTypeMap -> {
-          populateResourceAccessTypes(resourceIdToAccessType, accessTypeMap);
-          return titleCollection;
+          populateResourceAccessTypes(resourceIdToItem, accessTypeMap);
+          return collection;
         });
     };
   }
 
-  private void populateResourceAccessTypes(Map<String, TitleResult> resourceIdToTitle,
+  private void populateResourceAccessTypes(Map<String, ResourceItemResult> resourceIdToItem,
                                            Map<String, DbAccessType> accessTypeMap) {
     accessTypeMap.forEach((id, accessType) -> {
-      if (resourceIdToTitle.containsKey(id)) {
-        TitleResult titleResult = resourceIdToTitle.get(id);
-        titleResult.setResourceAccessType(accessType);
+      if (resourceIdToItem.containsKey(id)) {
+        resourceIdToItem.get(id).setAccessType(accessType);
       }
     });
   }
 
-  private Map<String, TitleResult> mapResourceIdToTitleResult(TitleCollectionResult tc) {
-    return tc.getTitleResults().stream().collect(toMap(this::getResourceId, Function.identity()));
-  }
-
-  private String getResourceId(TitleResult titleResult) {
-    CustomerResources resource = titleResult.getTitle().getCustomerResourcesList().getFirst();
-    return resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
+  private Map<String, ResourceItemResult> mapResourceIdToItem(ResourceItemCollectionResult collection) {
+    return collection.items().stream()
+      .collect(toMap(item -> IdParser.getResourceId(item.getResource()), Function.identity()));
   }
 }

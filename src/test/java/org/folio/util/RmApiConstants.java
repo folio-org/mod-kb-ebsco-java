@@ -112,11 +112,18 @@ public abstract class RmApiConstants {
     return RM_ACCOUNT_API_PATH + "/reports/holdings/deltas/" + deltaId + "/status";
   }
 
-  protected String resourcesRmApi(int vendorId, int packageId, int titleId) {
-    return RM_ACCOUNT_API_PATH + "/vendors/" + vendorId + "/packages/" + packageId + "/titles/" + titleId;
+  protected String resourcesRmApi(int packageId, int titleId) {
+    return RM_ACCOUNT_V2_API_PATH + "/lists/" + packageId + "/titles/" + titleId;
   }
 
-  protected String packageTitlesRmApi(int vendorId, int packageId) {
+  protected String packageTitlesRmApi(int packageId) {
+    return RM_ACCOUNT_V2_API_PATH + "/lists/" + packageId + "/titles";
+  }
+
+  /**
+   * Custom titles are still created through the v1 endpoint.
+   */
+  protected String customTitlesRmApi(int vendorId, int packageId) {
     return RM_ACCOUNT_API_PATH + "/vendors/" + vendorId + "/packages/" + packageId + "/titles";
   }
 
@@ -137,11 +144,11 @@ public abstract class RmApiConstants {
   }
 
   protected String titlesRmApi() {
-    return RM_ACCOUNT_API_PATH + "/titles";
+    return RM_ACCOUNT_V2_API_PATH + "/titles";
   }
 
   protected String titlesRmApi(int titleId) {
-    return RM_ACCOUNT_API_PATH + "/titles/" + titleId;
+    return RM_ACCOUNT_V2_API_PATH + "/titles/" + titleId;
   }
 
   protected String vendorsRmApi() {

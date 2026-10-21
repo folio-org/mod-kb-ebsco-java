@@ -36,6 +36,14 @@ queryParameters:
     description: String to search publishers to get a collection of titles
     example: academic
     required: false
+  filter[access]:
+    displayName: Package access
+    type: string
+    description: |
+      Limits the results based on Package Free Access.
+      Possible values: public, controlled
+    example: public
+    required: false
   filter[packageIds]:
     displayName: Query by package Ids
     type: string[]

@@ -39,19 +39,19 @@
         "publicationType": "Book",
         "subjects": [
           {
-            "subject": "BUSINESS & ECONOMICS \/ Industrial Management",
+            "subject": "BUSINESS & ECONOMICS / Industrial Management",
             "type": "BISAC"
           },
           {
-            "subject": "BUSINESS & ECONOMICS \/ Management",
+            "subject": "BUSINESS & ECONOMICS / Management",
             "type": "BISAC"
           },
           {
-            "subject": "BUSINESS & ECONOMICS \/ Management Science",
+            "subject": "BUSINESS & ECONOMICS / Management Science",
             "type": "BISAC"
           },
           {
-            "subject": "BUSINESS & ECONOMICS \/ Organizational Behavior",
+            "subject": "BUSINESS & ECONOMICS / Organizational Behavior",
             "type": "BISAC"
           }
         ],
@@ -59,6 +59,7 @@
           "embargoValue": 0
         },
         "isPackageCustom": false,
+        "packageType": "Complete",
         "isSelected": true,
         "isTokenNeeded": false,
         "locationId": 28972134,
@@ -67,22 +68,37 @@
         },
         "packageId": "295-2545963",
         "packageName": "InfoSci-Books 2014",
-        "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-4518-9",
+        "url": "http://services.igi-global.com/resolvedoi/resolve.aspx?doi=10.4018/978-1-4666-4518-9",
         "providerId": 295,
         "providerName": "IGI Global",
         "visibilityData": {
           "isHidden": false,
           "reason": ""
         },
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ],
         "managedCoverages": [
           {
             "beginCoverage": "2014-01-01",
             "endCoverage": "2014-12-31"
           }
         ],
-        "customCoverages": [
-
-        ],
+        "customCoverages": [],
         "userDefinedField1": "test 1",
         "userDefinedField2": "test 2",
         "userDefinedField3": "",
@@ -144,7 +160,7 @@
             "type": "TLI"
           },
           {
-            "subject": "EDUCATION \/ Higher",
+            "subject": "EDUCATION / Higher",
             "type": "BISAC"
           }
         ],
@@ -152,6 +168,7 @@
           "embargoValue": 0
         },
         "isPackageCustom": false,
+        "packageType": "Complete",
         "isSelected": true,
         "isTokenNeeded": false,
         "locationId": 28972354,
@@ -160,22 +177,37 @@
         },
         "packageId": "295-2545963",
         "packageName": "InfoSci-Books 2014",
-        "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-4797-8",
+        "url": "http://services.igi-global.com/resolvedoi/resolve.aspx?doi=10.4018/978-1-4666-4797-8",
         "providerId": 295,
         "providerName": "IGI Global",
         "visibilityData": {
           "isHidden": false,
           "reason": ""
         },
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ],
         "managedCoverages": [
           {
             "beginCoverage": "2014-01-01",
             "endCoverage": "2014-12-31"
           }
         ],
-        "customCoverages": [
-
-        ],
+        "customCoverages": [],
         "userDefinedField1": "test 3",
         "userDefinedField2": "test 4",
         "userDefinedField3": "",
@@ -233,7 +265,7 @@
         "publicationType": "Book",
         "subjects": [
           {
-            "subject": "EDUCATION \/ Higher",
+            "subject": "EDUCATION / Higher",
             "type": "BISAC"
           }
         ],
@@ -241,6 +273,7 @@
           "embargoValue": 0
         },
         "isPackageCustom": false,
+        "packageType": "Complete",
         "isSelected": true,
         "isTokenNeeded": false,
         "locationId": 28972340,
@@ -249,22 +282,37 @@
         },
         "packageId": "295-2545963",
         "packageName": "InfoSci-Books 2014",
-        "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-4590-5",
+        "url": "http://services.igi-global.com/resolvedoi/resolve.aspx?doi=10.4018/978-1-4666-4590-5",
         "providerId": 295,
         "providerName": "IGI Global",
         "visibilityData": {
           "isHidden": false,
           "reason": ""
         },
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ],
         "managedCoverages": [
           {
             "beginCoverage": "2014-01-01",
             "endCoverage": "2014-12-31"
           }
         ],
-        "customCoverages": [
-
-        ]
+        "customCoverages": []
       },
       "relationships": {
         "provider": {
@@ -318,7 +366,7 @@
         "publicationType": "Book",
         "subjects": [
           {
-            "subject": "PSYCHOLOGY \/ Social Psychology",
+            "subject": "PSYCHOLOGY / Social Psychology",
             "type": "BISAC"
           }
         ],
@@ -326,6 +374,7 @@
           "embargoValue": 0
         },
         "isPackageCustom": false,
+        "packageType": "Complete",
         "isSelected": true,
         "isTokenNeeded": false,
         "locationId": 28972237,
@@ -334,22 +383,37 @@
         },
         "packageId": "295-2545963",
         "packageName": "InfoSci-Books 2014",
-        "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-4490-8",
+        "url": "http://services.igi-global.com/resolvedoi/resolve.aspx?doi=10.4018/978-1-4666-4490-8",
         "providerId": 295,
         "providerName": "IGI Global",
         "visibilityData": {
           "isHidden": false,
           "reason": ""
         },
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ],
         "managedCoverages": [
           {
             "beginCoverage": "2014-01-01",
             "endCoverage": "2014-12-31"
           }
         ],
-        "customCoverages": [
-
-        ]
+        "customCoverages": []
       },
       "relationships": {
         "provider": {
@@ -412,11 +476,11 @@
             "type": "TLI"
           },
           {
-            "subject": "EDUCATION \/ Adult & Continuing Education",
+            "subject": "EDUCATION / Adult & Continuing Education",
             "type": "BISAC"
           },
           {
-            "subject": "EDUCATION \/ Non-Formal Education",
+            "subject": "EDUCATION / Non-Formal Education",
             "type": "BISAC"
           }
         ],
@@ -424,6 +488,7 @@
           "embargoValue": 0
         },
         "isPackageCustom": false,
+        "packageType": "Complete",
         "isSelected": true,
         "isTokenNeeded": false,
         "locationId": 28972367,
@@ -432,22 +497,37 @@
         },
         "packageId": "295-2545963",
         "packageName": "InfoSci-Books 2014",
-        "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-5780-9",
+        "url": "http://services.igi-global.com/resolvedoi/resolve.aspx?doi=10.4018/978-1-4666-5780-9",
         "providerId": 295,
         "providerName": "IGI Global",
         "visibilityData": {
           "isHidden": false,
           "reason": ""
         },
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ],
         "managedCoverages": [
           {
             "beginCoverage": "2014-01-01",
             "endCoverage": "2014-12-31"
           }
         ],
-        "customCoverages": [
-
-        ],
+        "customCoverages": [],
         "userDefinedField1": "test 8",
         "userDefinedField2": "test 9",
         "userDefinedField3": "test 10",

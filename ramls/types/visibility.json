@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Visibility details schema",
-  "description": "Visibility details schema",
-  "javaType": "org.folio.rest.jaxrs.model.PackageVisibility",
+  "title": "Visibility Schema",
+  "description": "Visibility of a package or resource in one category",
+  "javaType": "org.folio.rest.jaxrs.model.Visibility",
   "type": "object",
   "additionalProperties": false,
   "properties": {

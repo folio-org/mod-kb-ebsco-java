@@ -1,6 +1,6 @@
 package org.folio.rmapi.result;
 
 import java.util.List;
-import org.folio.holdingsiq.model.Titles;
+import org.folio.holdingsiq.model.Resource;
 
-public record ResourceBulkResult(Titles titles, List<String> failedResources) { }
+public record ResourceBulkResult(List<Resource> resources, List<String> failedResources) { }

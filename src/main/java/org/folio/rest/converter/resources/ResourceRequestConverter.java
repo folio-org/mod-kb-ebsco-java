@@ -4,12 +4,11 @@ import static org.folio.common.ListUtils.mapItems;
 
 import java.util.List;
 import org.folio.holdingsiq.model.CoverageDates;
-import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.EmbargoPeriod;
 import org.folio.holdingsiq.model.Proxy;
 import org.folio.holdingsiq.model.ProxyUrl;
+import org.folio.holdingsiq.model.Resource;
 import org.folio.holdingsiq.model.ResourcePut;
-import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.UserDefinedFields;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.ProxyDto;
@@ -20,37 +19,35 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ResourceRequestConverter {
-  public org.folio.holdingsiq.model.ResourcePut convertToRmApiResourcePutRequest(ResourcePutRequest entity,
-                                                                                 Title oldTitle) {
+  public ResourcePut convertToRmApiResourcePutRequest(ResourcePutRequest entity, Resource oldResource) {
     ResourcePutDataAttributes attributes = entity.getData().getAttributes();
     //Map common attributes for custom/managed resources to RM API fields
-    ResourcePut.ResourcePutBuilder builder = convertCommonAttributesToResourcePutRequest(attributes, oldTitle);
+    ResourcePut.ResourcePutBuilder builder = convertCommonAttributesToResourcePutRequest(attributes, oldResource);
     return builder.build();
   }
 
-  public ResourcePut convertToRmApiCustomResourcePutRequest(ResourcePutRequest entity, Title oldTitle) {
+  public ResourcePut convertToRmApiCustomResourcePutRequest(ResourcePutRequest entity, Resource oldResource) {
     ResourcePutDataAttributes attributes = entity.getData().getAttributes();
     //Map common attributes for custom/managed resources to RM API fields
-    ResourcePut.ResourcePutBuilder builder = convertCommonAttributesToResourcePutRequest(attributes, oldTitle);
+    ResourcePut.ResourcePutBuilder builder = convertCommonAttributesToResourcePutRequest(attributes, oldResource);
     //Map attributes specific to custom resources to RM API fields
-    builder.titleName(oldTitle.getTitleName());
-    builder.publisherName(oldTitle.getPublisherName());
-    builder.edition(oldTitle.getEdition());
-    builder.description(oldTitle.getDescription());
+    builder.titleName(oldResource.getTitleName());
+    builder.publisherName(oldResource.getPublisherName());
+    builder.edition(oldResource.getEdition());
+    builder.description(oldResource.getDescription());
 
-    builder.identifiersList(oldTitle.getIdentifiersList());
-    builder.contributorsList(oldTitle.getContributorsList());
+    builder.identifiersList(oldResource.getIdentifiersList());
+    builder.contributorsList(oldResource.getContributorsList());
     return builder.build();
   }
 
   private ResourcePut.ResourcePutBuilder convertCommonAttributesToResourcePutRequest(
-    ResourcePutDataAttributes attributes, Title oldTitle) {
+    ResourcePutDataAttributes attributes, Resource oldResource) {
     var builder = ResourcePut.builder();
-    var oldResource = oldTitle.getCustomerResourcesList().getFirst();
     builder.isSelected(valueOrDefault(attributes.getIsSelected(), oldResource.getIsSelected()));
 
     convertProxy(builder, attributes.getProxy(), oldResource.getProxy());
-    convertHidden(attributes, oldResource, builder);
+    convertHidden(attributes, builder);
     if (Boolean.TRUE == oldResource.getIsPackageCustom()) {
       builder.url(valueOrDefault(attributes.getUrl(), oldResource.getUrl()));
     }
@@ -65,21 +62,21 @@ public class ResourceRequestConverter {
     // but below, we set the same values as we conduct a GET for pubType and isPeerReviewed because otherwise
     // RM API gives a bad request error if those values are set to null. All the other fields are retained as
     // is by RM API because they cannot be updated.
-    builder.pubType(oldTitle.getPubType());
-    builder.isPeerReviewed(oldTitle.getIsPeerReviewed());
+    builder.pubType(oldResource.getPubType());
+    builder.isPeerReviewed(oldResource.getIsPeerReviewed());
 
     convertUserDefinedFields(attributes, builder, oldResource);
 
     return builder;
   }
 
-  private void convertHidden(ResourcePutDataAttributes attributes, CustomerResources oldResource,
-                             ResourcePut.ResourcePutBuilder builder) {
-    var oldHidden = oldResource.getVisibilityData() != null ? oldResource.getVisibilityData().getIsHidden() : null;
-    var isHidden = attributes.getVisibilityData() != null && attributes.getVisibilityData().getIsHidden() != null
-                   ? attributes.getVisibilityData().getIsHidden() : oldHidden;
-
-    builder.isHidden(isHidden);
+  /**
+   * Sends visibility only when the request sets it; HoldingsIQ keeps the current visibility when it is omitted.
+   * The per-category visibility takes precedence over the single visibility flag.
+   */
+  private void convertHidden(ResourcePutDataAttributes attributes, ResourcePut.ResourcePutBuilder builder) {
+    var isHidden = attributes.getVisibilityData() != null ? attributes.getVisibilityData().getIsHidden() : null;
+    builder.visibilityDetails(ResourceVisibility.toVisibilityDetails(attributes.getVisibility(), isHidden));
   }
 
   private void convertProxy(ResourcePut.ResourcePutBuilder builder, @Nullable ProxyDto newProxy, ProxyUrl oldProxy) {
@@ -93,7 +90,7 @@ public class ResourceRequestConverter {
     builder.proxy(rmApiProxy);
   }
 
-  private void convertCoverageDates(ResourcePutDataAttributes attributes, CustomerResources oldResource,
+  private void convertCoverageDates(ResourcePutDataAttributes attributes, Resource oldResource,
                                     ResourcePut.ResourcePutBuilder builder) {
     var coverageDates = attributes.getCustomCoverages() != null
                         ? convertToRmApiCustomCoverageList(attributes.getCustomCoverages())
@@ -114,7 +111,7 @@ public class ResourceRequestConverter {
   }
 
   private void convertUserDefinedFields(ResourcePutDataAttributes attributes, ResourcePut.ResourcePutBuilder builder,
-                                        CustomerResources oldResource) {
+                                        Resource oldResource) {
     builder.userDefinedFields(UserDefinedFields.builder()
       .userDefinedField1(
         valueOrDefault(attributes.getUserDefinedField1(), oldResource.getUserDefinedFields().getUserDefinedField1()))

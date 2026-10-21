@@ -3,21 +3,28 @@ package org.folio.rest.model.filter;
 import static java.util.Arrays.asList;
 
 import java.util.List;
+import java.util.Optional;
 import lombok.Builder;
 import lombok.Value;
-import org.folio.holdingsiq.model.FilterQuery;
+import org.folio.holdingsiq.model.FilterSelected;
+import org.folio.holdingsiq.model.SearchType;
+import org.folio.holdingsiq.model.TitleFilterType;
+import org.folio.properties.common.SearchProperties;
 import org.folio.repository.RecordType;
 
 @Value
 @Builder
 public class TitleFilter implements Filter {
 
+  private static final FilterValidator<TitleFilter> VALIDATOR = new TitleFilterValidator();
+
+  String query;
+  String queryField;
+  String queryType;
+
   String filterSelected;
   String filterType;
-  String filterName;
-  String filterIsxn;
-  String filterSubject;
-  String filterPublisher;
+  String filterAccess;
   List<String> filterPackageIds;
   String sort;
   int page;
@@ -32,10 +39,10 @@ public class TitleFilter implements Filter {
 
   @Override
   public List<String> searchCriteriaValues() {
-    return asList(filterIsxn, filterName, filterPublisher, filterSubject, filterSelected);
+    return asList(query, filterSelected);
   }
 
-  public String resolveFilterSelected() {
+  public FilterSelected resolveFilterSelected() {
     return Filter.mapFilterSelected(filterSelected);
   }
 
@@ -45,16 +52,21 @@ public class TitleFilter implements Filter {
         .toList();
   }
 
-  public FilterQuery createFilterQuery() {
-    return FilterQuery.builder()
-        .type(filterType)
-        .name(filterName)
-        .isxn(filterIsxn)
-        .subject(filterSubject)
-        .publisher(filterPublisher)
-        .selected(resolveFilterSelected())
-        .packageIds(resolveFilterPackageIds())
-        .build();
+  public Optional<SearchType> getSearchType() {
+    return Optional.ofNullable(queryType).map(SearchType::fromValue);
+  }
+
+  public org.folio.holdingsiq.model.TitleFilter toClientFilter(SearchProperties searchProperties) {
+    var search = TitleSearch.of(query, queryField);
+    return org.folio.holdingsiq.model.TitleFilter.builder()
+      .query(search.query())
+      .searchField(search.searchField())
+      .searchType(getSearchType().orElse(SearchType.fromValue(searchProperties.titlesSearchType())))
+      .filterSelected(resolveFilterSelected())
+      .filterType(TitleFilterType.fromValue(filterType))
+      .filterPackageIds(resolveFilterPackageIds())
+      .filterPackageFreeAccess(Filter.mapFilterAccess(filterAccess))
+      .build();
   }
 
   public static TitleFilterBuilder builder() {
@@ -62,7 +74,7 @@ public class TitleFilter implements Filter {
       @Override
       public TitleFilter build() {
         TitleFilter filter = super.build();
-        FilterValidators.validateTitle(filter);
+        VALIDATOR.validate(filter);
         return filter;
       }
     };

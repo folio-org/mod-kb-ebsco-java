@@ -1,0 +1,18 @@
+queryParameters:
+  q:
+    displayName: Search query
+    type: string
+    description: String used to search to retrieve a collection
+    example: ABC-CLIO
+    required: false
+  q[field]:
+    displayName: Search field
+    type: string
+    description: |
+      Field to search.
+      name - Searches on Title Names.
+      publisher - Searches on Title Publishers.
+      subject - Searches on Title Subjects.
+      isxn - Searches on Title ISxNs.
+      zdbid - Searches on Title ZBD IDs.
+    default: name

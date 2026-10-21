@@ -34,6 +34,7 @@ import org.folio.db.exc.DatabaseException;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.db.exc.translation.DBExceptionTranslatorFactory;
 import org.folio.holdingsiq.model.PackageData;
+import org.folio.holdingsiq.model.Resource;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.service.ConfigurationService;
@@ -139,8 +140,8 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public VertxCache<ResourceCacheKey, Title> resourceCache(Vertx vertx,
-                                                           @Value("${resource.cache.expire}") long expirationTime) {
+  public VertxCache<ResourceCacheKey, Resource> resourceCache(Vertx vertx,
+                                                              @Value("${resource.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "resourceCache");
   }
 

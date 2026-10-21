@@ -16,7 +16,7 @@
           "contributor": "Black, John"
         }
       ],
-      "titleId": 1175655,
+      "kbid": 1175655,
       "titleName": "The $1 Million Reason to Change Your Mind",
       "publisherName": null,
       "identifiersList": [
@@ -64,8 +64,8 @@
           "selected": false,
           "tokenNeeded": false,
           "packageCustom": false,
-          "titleId": 1175655,
-          "packageId": 22551,
+          "kbid": 1175655,
+          "listId": 22551,
           "packageName": "123Library eBooks",
           "isPackageCustom": false,
           "vendorId": 58251,
@@ -73,10 +73,6 @@
           "locationId": 8572506,
           "isSelected": false,
           "isTokenNeeded": false,
-          "visibilityData": {
-            "isHidden": false,
-            "reason": ""
-          },
           "managedCoverageList": [],
           "customCoverageList": [],
           "coverageStatement": null,
@@ -93,14 +89,31 @@
           "userDefinedField2": null,
           "userDefinedField3": null,
           "userDefinedField4": null,
-          "userDefinedField5": null
+          "userDefinedField5": null,
+          "visibility": [
+            {
+              "category": "PF",
+              "hidden": false,
+              "reason": ""
+            },
+            {
+              "category": "FTF",
+              "hidden": false,
+              "reason": ""
+            },
+            {
+              "category": "MARC",
+              "hidden": false,
+              "reason": ""
+            }
+          ]
         },
         {
           "selected": false,
           "tokenNeeded": true,
           "packageCustom": false,
-          "titleId": 1175655,
-          "packageId": 1884903,
+          "kbid": 1175655,
+          "listId": 1884903,
           "packageName": "ProQuest Ebook Library (EBL)",
           "isPackageCustom": false,
           "vendorId": 22,
@@ -108,10 +121,6 @@
           "locationId": 20482285,
           "isSelected": false,
           "isTokenNeeded": true,
-          "visibilityData": {
-            "isHidden": false,
-            "reason": ""
-          },
           "managedCoverageList": [
             {
               "beginCoverage": "2011-01-01",
@@ -133,14 +142,31 @@
           "userDefinedField2": null,
           "userDefinedField3": null,
           "userDefinedField4": null,
-          "userDefinedField5": null
+          "userDefinedField5": null,
+          "visibility": [
+            {
+              "category": "PF",
+              "hidden": false,
+              "reason": ""
+            },
+            {
+              "category": "FTF",
+              "hidden": false,
+              "reason": ""
+            },
+            {
+              "category": "MARC",
+              "hidden": false,
+              "reason": ""
+            }
+          ]
         },
         {
           "selected": false,
           "tokenNeeded": false,
           "packageCustom": false,
-          "titleId": 1175655,
-          "packageId": 1861142,
+          "kbid": 1175655,
+          "listId": 1861142,
           "packageName": "MyiLibrary",
           "isPackageCustom": false,
           "vendorId": 58388,
@@ -148,10 +174,6 @@
           "locationId": 9035313,
           "isSelected": false,
           "isTokenNeeded": false,
-          "visibilityData": {
-            "isHidden": false,
-            "reason": ""
-          },
           "managedCoverageList": [
             {
               "beginCoverage": "2011-01-01",
@@ -173,14 +195,31 @@
           "userDefinedField2": null,
           "userDefinedField3": null,
           "userDefinedField4": null,
-          "userDefinedField5": null
+          "userDefinedField5": null,
+          "visibility": [
+            {
+              "category": "PF",
+              "hidden": false,
+              "reason": ""
+            },
+            {
+              "category": "FTF",
+              "hidden": false,
+              "reason": ""
+            },
+            {
+              "category": "MARC",
+              "hidden": false,
+              "reason": ""
+            }
+          ]
         },
         {
           "selected": false,
           "tokenNeeded": true,
           "packageCustom": false,
-          "titleId": 1175655,
-          "packageId": 1887786,
+          "kbid": 1175655,
+          "listId": 1887786,
           "packageName": "ProQuest Ebook Central",
           "isPackageCustom": false,
           "vendorId": 22,
@@ -188,10 +227,6 @@
           "locationId": 20692303,
           "isSelected": false,
           "isTokenNeeded": true,
-          "visibilityData": {
-            "isHidden": false,
-            "reason": ""
-          },
           "managedCoverageList": [
             {
               "beginCoverage": "2011-01-01",
@@ -213,14 +248,31 @@
           "userDefinedField2": null,
           "userDefinedField3": null,
           "userDefinedField4": null,
-          "userDefinedField5": null
+          "userDefinedField5": null,
+          "visibility": [
+            {
+              "category": "PF",
+              "hidden": false,
+              "reason": ""
+            },
+            {
+              "category": "FTF",
+              "hidden": false,
+              "reason": ""
+            },
+            {
+              "category": "MARC",
+              "hidden": false,
+              "reason": ""
+            }
+          ]
         },
         {
           "selected": false,
           "tokenNeeded": false,
           "packageCustom": false,
-          "titleId": 1175655,
-          "packageId": 6822,
+          "kbid": 1175655,
+          "listId": 6822,
           "packageName": "DawsonEra eBooks",
           "isPackageCustom": false,
           "vendorId": 977,
@@ -228,10 +280,6 @@
           "locationId": 5491226,
           "isSelected": false,
           "isTokenNeeded": false,
-          "visibilityData": {
-            "isHidden": false,
-            "reason": ""
-          },
           "managedCoverageList": [
             {
               "beginCoverage": "2011-01-01",
@@ -253,14 +301,31 @@
           "userDefinedField2": null,
           "userDefinedField3": null,
           "userDefinedField4": null,
-          "userDefinedField5": null
+          "userDefinedField5": null,
+          "visibility": [
+            {
+              "category": "PF",
+              "hidden": false,
+              "reason": ""
+            },
+            {
+              "category": "FTF",
+              "hidden": false,
+              "reason": ""
+            },
+            {
+              "category": "MARC",
+              "hidden": false,
+              "reason": ""
+            }
+          ]
         },
         {
           "selected": false,
           "tokenNeeded": false,
           "packageCustom": false,
-          "titleId": 1175655,
-          "packageId": 3964,
+          "kbid": 1175655,
+          "listId": 3964,
           "packageName": "EBSCO eBooks",
           "isPackageCustom": false,
           "vendorId": 19,
@@ -268,10 +333,6 @@
           "locationId": 3982299,
           "isSelected": false,
           "isTokenNeeded": false,
-          "visibilityData": {
-            "isHidden": false,
-            "reason": ""
-          },
           "managedCoverageList": [
             {
               "beginCoverage": "2009-01-01",
@@ -293,7 +354,24 @@
           "userDefinedField2": null,
           "userDefinedField3": null,
           "userDefinedField4": null,
-          "userDefinedField5": null
+          "userDefinedField5": null,
+          "visibility": [
+            {
+              "category": "PF",
+              "hidden": false,
+              "reason": ""
+            },
+            {
+              "category": "FTF",
+              "hidden": false,
+              "reason": ""
+            },
+            {
+              "category": "MARC",
+              "hidden": false,
+              "reason": ""
+            }
+          ]
         }
       ]
     }

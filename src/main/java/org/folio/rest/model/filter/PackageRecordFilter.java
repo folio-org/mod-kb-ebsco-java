@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Optional;
 import lombok.Builder;
 import lombok.Value;
+import org.folio.holdingsiq.model.FilterFreeAccess;
+import org.folio.holdingsiq.model.FilterSelected;
 import org.folio.holdingsiq.model.PackageFilter;
-import org.folio.holdingsiq.model.PackageFilterFreeAccess;
-import org.folio.holdingsiq.model.PackageFilterSelected;
 import org.folio.holdingsiq.model.PackageFilterType;
 import org.folio.holdingsiq.model.PackageFilterVisibility;
 import org.folio.holdingsiq.model.PackageSearchField;
@@ -65,7 +65,7 @@ public class PackageRecordFilter implements Filter {
     return Optional.ofNullable(queryField).map(PackageSearchField::fromValue);
   }
 
-  public Optional<PackageFilterSelected> getPackageFilterSelected() {
+  public Optional<FilterSelected> getPackageFilterSelected() {
     return Optional.ofNullable(filterSelected).map(RestConstants.FILTER_SELECTED_MAPPING::get);
   }
 
@@ -73,7 +73,7 @@ public class PackageRecordFilter implements Filter {
     return Optional.ofNullable(filterType).map(PackageFilterType::fromValue);
   }
 
-  public Optional<PackageFilterFreeAccess> getPackageFilterFreeAccess() {
+  public Optional<FilterFreeAccess> getPackageFilterFreeAccess() {
     return Optional.ofNullable(filterFreeAccess).map(RestConstants.FILTER_FREE_ACCESS_MAPPING::get);
   }
 

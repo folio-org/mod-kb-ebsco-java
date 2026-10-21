@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Objects;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.Proxy;
+import org.folio.holdingsiq.model.Resources;
 import org.folio.holdingsiq.model.SubjectAssociation;
-import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.model.TokenInfo;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.AccessType;
@@ -38,12 +38,12 @@ public class PackageConverter implements Converter<PackageResult, Package> {
 
   private final Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter;
   private final Converter<VendorById, Provider> vendorConverter;
-  private final Converter<Titles, ResourceCollection> resourcesConverter;
+  private final Converter<Resources, ResourceCollection> resourcesConverter;
   private final Converter<TokenInfo, Token> tokenInfoConverter;
 
   public PackageConverter(Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter,
                           Converter<VendorById, Provider> vendorConverter,
-                          Converter<Titles, ResourceCollection> resourcesConverter,
+                          Converter<Resources, ResourceCollection> resourcesConverter,
                           Converter<TokenInfo, Token> tokenInfoConverter) {
     this.packageCollectionItemConverter = packageCollectionItemConverter;
     this.vendorConverter = vendorConverter;
@@ -75,18 +75,18 @@ public class PackageConverter implements Converter<PackageResult, Package> {
   }
 
   private void addTitlesRelationship(PackageResult result, Package packageDto, PackageData packageData) {
-    Titles titles = result.getTitles();
-    if (titles != null) {
+    var resources = result.getResources();
+    if (resources != null) {
       packageDto.getData()
         .withRelationships(new PackageRelationship()
           .withResources(new HasManyRelationship()
             .withMeta(new MetaDataIncluded()
               .withIncluded(true))
-            .withData(convertResourcesRelationship(packageData, titles))));
+            .withData(convertResourcesRelationship(packageData, resources))));
 
       packageDto
         .getIncluded()
-        .addAll(Objects.requireNonNull(resourcesConverter.convert(titles)).getData());
+        .addAll(Objects.requireNonNull(resourcesConverter.convert(resources)).getData());
     }
   }
 
@@ -142,10 +142,10 @@ public class PackageConverter implements Converter<PackageResult, Package> {
     return proxy != null ? new ProxyDto().withId(proxy.getId()).withInherited(proxy.getInherited()) : null;
   }
 
-  private List<RelationshipData> convertResourcesRelationship(PackageData packageData, Titles titles) {
-    return mapItems(titles.getTitleList(),
-      title -> new RelationshipData()
-        .withId(packageData.getVendorId() + "-" + packageData.getPackageId() + "-" + title.getTitleId())
+  private List<RelationshipData> convertResourcesRelationship(PackageData packageData, Resources resources) {
+    return mapItems(resources.getTitles(),
+      resource -> new RelationshipData()
+        .withId(packageData.getVendorId() + "-" + packageData.getPackageId() + "-" + resource.getTitleId())
         .withType(RESOURCES_TYPE));
   }
 }

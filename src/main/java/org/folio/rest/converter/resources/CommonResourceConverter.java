@@ -1,19 +1,22 @@
 package org.folio.rest.converter.resources;
 
+import static org.folio.common.ListUtils.mapItemsNullable;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import org.folio.holdingsiq.model.Contributor;
 import org.folio.holdingsiq.model.CoverageDates;
-import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.EmbargoPeriod;
 import org.folio.holdingsiq.model.Identifier;
 import org.folio.holdingsiq.model.ProxyUrl;
+import org.folio.holdingsiq.model.Resource;
 import org.folio.holdingsiq.model.Subject;
-import org.folio.holdingsiq.model.Title;
-import org.folio.holdingsiq.model.VisibilityInfo;
+import org.folio.holdingsiq.model.Visibility;
 import org.folio.rest.converter.common.ConverterConsts;
+import org.folio.rest.converter.common.attr.VisibilityDetailsMapper;
+import org.folio.rest.converter.titles.TitleRelationshipMapper;
 import org.folio.rest.jaxrs.model.AlternateTitle;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.Coverage;
@@ -32,7 +35,7 @@ public class CommonResourceConverter {
   private final Converter<List<Identifier>, List<org.folio.rest.jaxrs.model.Identifier>> identifiersConverter;
   private final Converter<List<Subject>, List<TitleSubject>> subjectsConverter;
   private final Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> embargoPeriodConverter;
-  private final Converter<VisibilityInfo, VisibilityData> visibilityInfoConverter;
+  private final Converter<List<Visibility>, VisibilityData> visibilityConverter;
   private final Converter<List<CoverageDates>, List<Coverage>> coverageDatesConverter;
   private final Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>>
     alternateTitleConverter;
@@ -42,39 +45,43 @@ public class CommonResourceConverter {
     Converter<List<Identifier>, List<org.folio.rest.jaxrs.model.Identifier>> identifiersConverter,
     Converter<List<Subject>, List<TitleSubject>> subjectsConverter,
     Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> embargoPeriodConverter,
-    Converter<VisibilityInfo, VisibilityData> visibilityInfoConverter,
+    Converter<List<Visibility>, VisibilityData> visibilityConverter,
     Converter<List<CoverageDates>, List<Coverage>> coverageDatesConverter,
     Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> alternateTitleConverter) {
     this.contributorsConverter = contributorsConverter;
     this.identifiersConverter = identifiersConverter;
     this.subjectsConverter = subjectsConverter;
     this.embargoPeriodConverter = embargoPeriodConverter;
-    this.visibilityInfoConverter = visibilityInfoConverter;
+    this.visibilityConverter = visibilityConverter;
     this.coverageDatesConverter = coverageDatesConverter;
     this.alternateTitleConverter = alternateTitleConverter;
   }
 
   @SuppressWarnings("checkstyle:MethodLength")
-  public ResourceDataAttributes createResourceDataAttributes(Title title, CustomerResources resource) {
+  public ResourceDataAttributes createResourceDataAttributes(Resource resource) {
     return new ResourceDataAttributes()
-      .withAlternateTitles(alternateTitleConverter.convert(Objects.requireNonNullElse(title.getAlternateTitleList(),
+      .withAlternateTitles(alternateTitleConverter.convert(Objects.requireNonNullElse(resource.getAlternateTitleList(),
         Collections.emptyList())))
-      .withDescription(title.getDescription())
-      .withEdition(title.getEdition())
-      .withIsPeerReviewed(title.getIsPeerReviewed())
-      .withIsTitleCustom(title.getIsTitleCustom())
-      .withPublisherName(title.getPublisherName())
-      .withTitleId(title.getTitleId())
-      .withContributors(contributorsConverter.convert(title.getContributorsList()))
-      .withIdentifiers(identifiersConverter.convert(title.getIdentifiersList()))
-      .withName(title.getTitleName())
-      .withPublicationType(ConverterConsts.PUBLICATION_TYPES.get(title.getPubType().toLowerCase()))
-      .withSubjects(subjectsConverter.convert(title.getSubjectsList()))
+      .withDescription(resource.getDescription())
+      .withEdition(resource.getEdition())
+      .withIsPeerReviewed(resource.getIsPeerReviewed())
+      .withIsTitleCustom(resource.getIsTitleCustom())
+      .withPublisherName(resource.getPublisherName())
+      .withTitleId(resource.getTitleId())
+      .withContributors(contributorsConverter.convert(resource.getContributorsList()))
+      .withIdentifiers(identifiersConverter.convert(resource.getIdentifiersList()))
+      .withName(resource.getTitleName())
+      .withPublicationType(ConverterConsts.PUBLICATION_TYPES.get(resource.getPubType().toLowerCase()))
+      .withSubjects(subjectsConverter.convert(resource.getSubjectsList()))
       .withCoverageStatement(resource.getCoverageStatement())
       .withCustomEmbargoPeriod(embargoPeriodConverter.convert(resource.getCustomEmbargoPeriod()))
       .withIsPackageCustom(resource.getIsPackageCustom())
+      .withPackageType(resource.getPackageType())
+      .withIsPrimaryPackage(resource.getIsPrimaryPackage())
       .withIsSelected(resource.getIsSelected())
+      .withIsOrderedThroughEbsco(resource.getIsOrderedThroughEbsco())
       .withIsTokenNeeded(resource.getIsTokenNeeded())
+      .withCustomCoverageOwnership(resource.getCustomCoverageOwnership())
       .withLocationId(resource.getLocationId())
       .withManagedEmbargoPeriod(embargoPeriodConverter.convert(resource.getManagedEmbargoPeriod()))
       .withPackageId(resource.getVendorId() + "-" + resource.getPackageId())
@@ -82,7 +89,8 @@ public class CommonResourceConverter {
       .withUrl(resource.getUrl())
       .withProviderId(resource.getVendorId())
       .withProviderName(resource.getVendorName())
-      .withVisibilityData(visibilityInfoConverter.convert(resource.getVisibilityData()))
+      .withVisibilityData(visibilityConverter.convert(resource.getVisibilityDetails()))
+      .withVisibility(mapItemsNullable(resource.getVisibilityDetails(), VisibilityDetailsMapper::toApiVisibility))
       .withManagedCoverages(coverageDatesConverter.convert(resource.getManagedCoverageList()))
       .withCustomCoverages(coverageDatesConverter.convert(
         resource.getCustomCoverageList().stream()
@@ -93,7 +101,8 @@ public class CommonResourceConverter {
       .withUserDefinedField2(resource.getUserDefinedFields().getUserDefinedField2())
       .withUserDefinedField3(resource.getUserDefinedFields().getUserDefinedField3())
       .withUserDefinedField4(resource.getUserDefinedFields().getUserDefinedField4())
-      .withUserDefinedField5(resource.getUserDefinedFields().getUserDefinedField5());
+      .withUserDefinedField5(resource.getUserDefinedFields().getUserDefinedField5())
+      .withTitleRelationships(TitleRelationshipMapper.toApiRelationships(resource.getTitleRelationships()));
   }
 
   public @Nullable ProxyUrlDto convertProxy(@Nullable ProxyUrl proxy) {

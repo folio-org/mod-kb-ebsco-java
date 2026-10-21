@@ -104,10 +104,11 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
     "responses/rmapi/packages/get-custom-package-by-id-response.json";
   private static final String RESOURCES_BY_PACKAGE_ID_STUB_FILE =
     "responses/rmapi/resources/get-resources-by-package-id-response.json";
+
+  // the resources-by-package fixture belongs to provider 295
+  private static final String RESOURCES_FIXTURE_PACKAGE_ID = "295-" + STUB_PACKAGE_ID;
   private static final String RESOURCES_BY_PACKAGE_ID_EMPTY_STUB_FILE =
     "responses/rmapi/resources/get-resources-by-package-id-response-empty.json";
-  private static final String RESOURCES_BY_PACKAGE_ID_EMPTY_CUSTOMER_RESOURCE_LIST_STUB_FILE =
-    "responses/rmapi/resources/get-resources-by-package-id-response-empty-customer-list.json";
   private static final String VENDOR_BY_PACKAGE_ID_STUB_FILE =
     "responses/rmapi/vendors/get-vendor-by-id-for-package.json";
   private static final String GET_PACKAGES_RESPONSE =
@@ -128,8 +129,8 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
     "responses/rmapi/packages/get-package-by-id-not-found-response.json";
   private static final String GET_PROXIES_CUSTOMLABELS_RESPONSE =
     "responses/rmapi/proxiescustomlabels/get-success-response.json";
-  private static final String GET_TITLE_BY_ID_RESPONSE =
-    "responses/rmapi/titles/get-title-by-id-response.json";
+  private static final String GET_RESOURCE_BY_ID_RESPONSE =
+    "responses/rmapi/resources/get-resource-by-id-success-response.json";
 
   // KB-EBSCO expected responses
   private static final String EXPECTED_PACKAGE_BY_ID_STUB_FILE =
@@ -385,6 +386,16 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
   }
 
   @Test
+  void shouldReturn404OnGetByIdWhenPackageBelongsToAnotherProvider() {
+    mockGet(matching(packageRmApi(STUB_PACKAGE_ID)), readFile(CUSTOM_PACKAGE_STUB_FILE));
+
+    var error = getWithStatus(packagePath((STUB_VENDOR_ID + 1) + "-" + STUB_PACKAGE_ID), SC_NOT_FOUND)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "not found");
+  }
+
+  @Test
   void shouldReturnPackageWithTagOnGetById() {
     saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
     mockGet(matching(packageRmApi(STUB_PACKAGE_ID)), readFile(CUSTOM_PACKAGE_STUB_FILE));
@@ -534,6 +545,8 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
 
     var expectedPackage = readJsonFile(EXPECTED_PACKAGE_BY_ID_STUB_FILE, Package.class);
     var expectedResources = readJsonFile(EXPECTED_RESOURCES_STUB_FILE, ResourceCollection.class);
+    // titleRelationships are omitted when not requested; the generated model would serialize its default []
+    expectedResources.getData().forEach(item -> item.getAttributes().setTitleRelationships(null));
     expectedPackage.getIncluded().addAll(expectedResources.getData());
 
     assertJsonEqual(Json.encode(expectedPackage), Json.encode(actual));
@@ -985,23 +998,55 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
   }
 
   @Test
+  void shouldSendZdbidAndAccessFiltersToRmApiOnGetWithResources() {
+    mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
+
+    getWithOk(resourcesPath(RESOURCES_FIXTURE_PACKAGE_ID) + "?q=2071469-8&q[field]=zdbid&filter[access]=controlled");
+
+    wm.verify(1, getRequestedFor(urlPathEqualTo(packageTitlesRmApi(STUB_PACKAGE_ID)))
+      .withQueryParam("searchfield", WireMock.equalTo("zdbid"))
+      .withQueryParam("search", WireMock.equalTo("2071469-8"))
+      .withQueryParam("packagefreeaccess", WireMock.equalTo("false")));
+  }
+
+  @Test
+  void shouldMapLegacyFilterNameToSearchOnGetWithResources() {
+    mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
+
+    getWithOk(resourcesPath(RESOURCES_FIXTURE_PACKAGE_ID) + "?filter[publisher]=academic");
+
+    wm.verify(1, getRequestedFor(urlPathEqualTo(packageTitlesRmApi(STUB_PACKAGE_ID)))
+      .withQueryParam("searchfield", WireMock.equalTo("publisher"))
+      .withQueryParam("search", WireMock.equalTo("academic")));
+  }
+
+  @Test
+  void shouldReturn400WhenFilterAccessIsInvalidOnGetWithResources() {
+    var error = getWithStatus(resourcesPath(FULL_PACKAGE_ID) + "?filter[access]=free", SC_BAD_REQUEST)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid Query Parameter for filter[access]");
+  }
+
+  @Test
   void shouldReturnDefaultResourcesOnGetWithResources() {
     String query = "?searchfield=titlename&selection=all&resourcetype=all"
-                   + "&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
-    shouldReturnResourcesOnGetWithResources(resourcesPath(FULL_PACKAGE_ID), query);
+                   + "&search=&offset=1&count=25&orderby=titlename";
+    shouldReturnResourcesOnGetWithResources(resourcesPath(RESOURCES_FIXTURE_PACKAGE_ID), query);
   }
 
   @Test
   void shouldReturnResourcesWithPagingOnGetWithResources() {
-    var resourcesUrl = resourcesPath(FULL_PACKAGE_ID) + "?page=2";
+    var resourcesUrl = resourcesPath(RESOURCES_FIXTURE_PACKAGE_ID) + "?page=2";
     var query = "?searchfield=titlename&selection=all&resourcetype=all"
-                + "&searchtype=advanced&search=&offset=2&count=25&orderby=titlename";
+                + "&search=&offset=2&count=25&orderby=titlename";
     shouldReturnResourcesOnGetWithResources(resourcesUrl, query);
   }
 
   @Test
   void shouldReturnEmptyListWhenResourcesAreNotFound() {
     mockResourceById(RESOURCES_BY_PACKAGE_ID_EMPTY_STUB_FILE);
+    mockGet(matching(packageRmApi(STUB_PACKAGE_ID)), readFile(CUSTOM_PACKAGE_STUB_FILE));
 
     var actual = getWithOk(resourcesPath(FULL_PACKAGE_ID)).as(ResourceCollection.class);
     assertTrue(actual.getData().isEmpty());
@@ -1014,17 +1059,17 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
     saveTag(vertx, "295-2545963-2172685", RESOURCE, STUB_TAG_VALUE_2);
     saveTag(vertx, "295-2545963-2172685", RESOURCE, STUB_TAG_VALUE_3);
 
-    String query = "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced"
+    String query = "?searchfield=titlename&selection=all&resourcetype=all"
                    + "&search=&offset=1&count=25&orderby=titlename";
 
     mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
 
-    var actual = getWithOk(resourcesPath(FULL_PACKAGE_ID)).asString();
+    var actual = getWithOk(resourcesPath(RESOURCES_FIXTURE_PACKAGE_ID)).asString();
     var expected = readFile(EXPECTED_RESOURCES_WITH_TAGS_STUB_FILE);
 
     assertJsonEqual(expected, actual);
 
-    wm.verify(1, getRequestedFor(urlEqualTo(packageTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID) + query)));
+    wm.verify(1, getRequestedFor(urlEqualTo(packageTitlesRmApi(STUB_PACKAGE_ID) + query)));
   }
 
   @Test
@@ -1033,7 +1078,7 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
     insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.getFirst().getId(), vertx);
     insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.getFirst().getId(), vertx);
 
-    mockResourceById(GET_TITLE_BY_ID_RESPONSE);
+    mockResourceById(GET_RESOURCE_BY_ID_RESPONSE);
 
     var resourcePath = withAccessTypeFilters(resourcesPath(FULL_PACKAGE_ID), STUB_ACCESS_TYPE_NAME);
     var resourceCollection = getWithOk(resourcePath).as(ResourceCollection.class);
@@ -1052,7 +1097,7 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
     insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
     insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
 
-    mockResourceById(GET_TITLE_BY_ID_RESPONSE);
+    mockResourceById(GET_RESOURCE_BY_ID_RESPONSE);
 
     var resourcePath = withAccessTypeFilters(resourcesPath(FULL_PACKAGE_ID) + "?page=2&count=1",
       STUB_ACCESS_TYPE_NAME, STUB_ACCESS_TYPE_NAME_2);
@@ -1070,10 +1115,10 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
     insertAccessTypeMapping("295-2545963-2099944", RESOURCE, accessTypes.get(0).getId(), vertx);
     insertAccessTypeMapping("295-2545963-2172685", RESOURCE, accessTypes.get(1).getId(), vertx);
 
-    mockResourceById(GET_TITLE_BY_ID_RESPONSE);
+    mockResourceById(GET_RESOURCE_BY_ID_RESPONSE);
     mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
 
-    var resourceCollection = getWithOk(resourcesPath(FULL_PACKAGE_ID)).as(ResourceCollection.class);
+    var resourceCollection = getWithOk(resourcesPath(RESOURCES_FIXTURE_PACKAGE_ID)).as(ResourceCollection.class);
     var resources = resourceCollection.getData();
 
     assertEquals(5, (int) resourceCollection.getMeta().getTotalResults());
@@ -1090,18 +1135,18 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
   }
 
   @Test
-  void shouldReturnFilteredResourcesWithNonEmptyCustomerResourceList() {
-    mockResourceById(RESOURCES_BY_PACKAGE_ID_EMPTY_CUSTOMER_RESOURCE_LIST_STUB_FILE);
+  void shouldReturn404OnGetWithResourcesWhenPackageBelongsToAnotherProvider() {
+    mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
 
-    var resourceCollection = getWithOk(resourcesPath(FULL_PACKAGE_ID)).as(ResourceCollection.class);
+    var error = getWithStatus(resourcesPath("296-" + STUB_PACKAGE_ID), SC_NOT_FOUND).as(JsonapiError.class);
 
-    var metaTotalResults = resourceCollection.getMeta();
-    assertEquals(3, metaTotalResults.getTotalResults());
+    assertErrorContainsTitle(error, "not found");
   }
 
   @Test
   void shouldReturn404OnGetWithResourcesWhenPackageNotFound() {
-    mockGet(matching(packageTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID) + ".*"), SC_NOT_FOUND);
+    mockResourceById(RESOURCES_BY_PACKAGE_ID_EMPTY_STUB_FILE);
+    mockGet(matching(packageRmApi(STUB_PACKAGE_ID)), SC_NOT_FOUND);
 
     var error = getWithStatus(resourcesPath(FULL_PACKAGE_ID), SC_NOT_FOUND).as(JsonapiError.class);
 
@@ -1119,7 +1164,7 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturn400OnGetWithResourcesWhenRmApi400() {
-    mockGet(matching(packageTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID) + ".*"),
+    mockGet(matching(packageTitlesRmApi(STUB_PACKAGE_ID) + ".*"),
       readFile(GET_PACKAGE_RESOURCES_400_RESPONSE), SC_BAD_REQUEST);
 
     var error = getWithStatus(resourcesPath(FULL_PACKAGE_ID), SC_BAD_REQUEST).as(JsonapiError.class);
@@ -1129,7 +1174,7 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturnUnauthorizedOnGetWithResourcesWhenRmApi401() {
-    mockGet(matching(packageTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID) + ".*"), SC_UNAUTHORIZED);
+    mockGet(matching(packageTitlesRmApi(STUB_PACKAGE_ID) + ".*"), SC_UNAUTHORIZED);
 
     var error = getWithStatus(resourcesPath(FULL_PACKAGE_ID), SC_FORBIDDEN).as(JsonapiError.class);
 
@@ -1138,7 +1183,7 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturnUnauthorizedOnGetWithResourcesWhenRmApi403() {
-    mockGet(matching(packageTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID) + ".*"), SC_FORBIDDEN);
+    mockGet(matching(packageTitlesRmApi(STUB_PACKAGE_ID) + ".*"), SC_FORBIDDEN);
 
     var error = getWithStatus(resourcesPath(FULL_PACKAGE_ID), SC_FORBIDDEN).as(JsonapiError.class);
 
@@ -1289,11 +1334,11 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
 
     assertJsonEqual(expected, actual);
 
-    wm.verify(1, getRequestedFor(urlEqualTo(packageTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID) + rmApiQuery)));
+    wm.verify(1, getRequestedFor(urlEqualTo(packageTitlesRmApi(STUB_PACKAGE_ID) + rmApiQuery)));
   }
 
   private void mockResourceById(String stubFile) {
-    mockGet(matching(packageTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID) + ".*"), readFile(stubFile));
+    mockGet(matching(packageTitlesRmApi(STUB_PACKAGE_ID) + ".*"), readFile(stubFile));
   }
 
   private void mockUpdateScenario(String initialPackage, String updatedPackage) {

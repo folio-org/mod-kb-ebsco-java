@@ -2,22 +2,24 @@ package org.folio.rest.converter.resources;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.List.of;
 import static org.folio.util.ResourcesTestUtil.getResourcePutRequest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import org.folio.holdingsiq.model.CoverageDates;
-import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.ProxyUrl;
-import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.Resource;
 import org.folio.holdingsiq.model.UserDefinedFields;
-import org.folio.holdingsiq.model.VisibilityInfo;
+import org.folio.holdingsiq.model.Visibility;
 import org.folio.rest.jaxrs.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.ProxyDto;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
+import org.folio.rest.jaxrs.model.Visibility.Category;
 import org.folio.rest.jaxrs.model.VisibilityData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,27 +37,23 @@ class ResourceRequestConverterTest {
 
   private final ResourceRequestConverter resourcesConverter = new ResourceRequestConverter();
 
-  private Title resourceData;
+  private Resource resourceData;
 
   @BeforeEach
   void setUp() {
-    resourceData = Title.builder()
+    resourceData = Resource.builder()
       .contributorsList(emptyList())
-      .customerResourcesList(singletonList(CustomerResources.builder()
-        .coverageStatement(OLD_COVERAGE_STATEMENT)
-        .isSelected(false)
-        .visibilityData(VisibilityInfo.builder()
-          .isHidden(OLD_VISIBILITY_DATA).build())
-        .customCoverageList(singletonList(CoverageDates.builder()
-          .beginCoverage(OLD_BEGIN_COVERAGE).endCoverage(OLD_END_COVERAGE).build()))
-        .customEmbargoPeriod(org.folio.holdingsiq.model.EmbargoPeriod.builder()
-          .embargoUnit(OLD_EMBARGO_UNIT).embargoValue(OLD_EMBARGO_VALUE).build())
-        .proxy(ProxyUrl.builder().proxiedUrl(OLD_URL)
-          .id(OLD_PROXY_ID).inherited(true).build())
-        .url(OLD_URL)
-        .userDefinedFields(UserDefinedFields.builder().build())
-        .build()
-      ))
+      .coverageStatement(OLD_COVERAGE_STATEMENT)
+      .isSelected(false)
+      .visibilityDetails(of(new Visibility("PF", OLD_VISIBILITY_DATA, "")))
+      .customCoverageList(singletonList(CoverageDates.builder()
+        .beginCoverage(OLD_BEGIN_COVERAGE).endCoverage(OLD_END_COVERAGE).build()))
+      .customEmbargoPeriod(org.folio.holdingsiq.model.EmbargoPeriod.builder()
+        .embargoUnit(OLD_EMBARGO_UNIT).embargoValue(OLD_EMBARGO_VALUE).build())
+      .proxy(ProxyUrl.builder().proxiedUrl(OLD_URL)
+        .id(OLD_PROXY_ID).inherited(true).build())
+      .url(OLD_URL)
+      .userDefinedFields(UserDefinedFields.builder().build())
       .identifiersList(emptyList())
       .subjectsList(emptyList())
       .titleId(1)
@@ -122,7 +120,48 @@ class ResourceRequestConverterTest {
         .withIsSelected(true)
         .withVisibilityData(new VisibilityData()
           .withIsHidden(true))), resourceData);
-    assertTrue(resourcePut.getIsHidden());
+    assertEquals(allCategories(true), resourcePut.getVisibilityDetails());
+  }
+
+  @Test
+  void shouldCreateRequestToUpdateVisibilityPerCategory() {
+    var resourcePut = resourcesConverter.convertToRmApiResourcePutRequest(getResourcePutRequest(
+      new ResourcePutDataAttributes()
+        .withIsSelected(true)
+        .withVisibility(of(
+          new org.folio.rest.jaxrs.model.Visibility().withCategory(Category.PF).withHidden(true),
+          new org.folio.rest.jaxrs.model.Visibility().withCategory(Category.FTF).withHidden(false),
+          new org.folio.rest.jaxrs.model.Visibility().withCategory(Category.MARC).withHidden(true)))), resourceData);
+    assertEquals(of(new Visibility("PF", true, "Hidden by Customer"), new Visibility("FTF", false, null),
+      new Visibility("MARC", true, "Hidden by Customer")), resourcePut.getVisibilityDetails());
+  }
+
+  @Test
+  void shouldCreateRequestToUpdateOnlySentVisibilityCategories() {
+    var resourcePut = resourcesConverter.convertToRmApiCustomResourcePutRequest(getResourcePutRequest(
+      new ResourcePutDataAttributes()
+        .withIsSelected(true)
+        .withVisibility(of(
+          new org.folio.rest.jaxrs.model.Visibility().withCategory(Category.MARC).withHidden(true)))), resourceData);
+    assertEquals(of(new Visibility("MARC", true, "Hidden by Customer")), resourcePut.getVisibilityDetails());
+  }
+
+  @Test
+  void shouldPreferVisibilityPerCategoryOverVisibilityData() {
+    var resourcePut = resourcesConverter.convertToRmApiResourcePutRequest(getResourcePutRequest(
+      new ResourcePutDataAttributes()
+        .withIsSelected(true)
+        .withVisibilityData(new VisibilityData().withIsHidden(true))
+        .withVisibility(of(
+          new org.folio.rest.jaxrs.model.Visibility().withCategory(Category.PF).withHidden(false)))), resourceData);
+    assertEquals(of(new Visibility("PF", false, null)), resourcePut.getVisibilityDetails());
+  }
+
+  @Test
+  void shouldNotSendVisibilityWhenRequestDoesNotSetIt() {
+    var resourcePut = resourcesConverter.convertToRmApiResourcePutRequest(getResourcePutRequest(
+      new ResourcePutDataAttributes().withIsSelected(true)), resourceData);
+    assertNull(resourcePut.getVisibilityDetails());
   }
 
   @Test
@@ -150,7 +189,7 @@ class ResourceRequestConverterTest {
         .withIsSelected(true)
         .withVisibilityData(new VisibilityData()
           .withIsHidden(false))), resourceData);
-    assertFalse(resourcePut.getIsHidden());
+    assertEquals(allCategories(false), resourcePut.getVisibilityDetails());
   }
 
   @Test
@@ -196,33 +235,36 @@ class ResourceRequestConverterTest {
 
   @Test
   void shouldCreateRequestToUpdateUrlForCustomResource() {
-    var customerResourcesBuilder = resourceData.getCustomerResourcesList().getFirst().toBuilder();
-    var resources = customerResourcesBuilder.isPackageCustom(true).build();
-    var title = resourceData.toBuilder().customerResourcesList(singletonList(resources)).build();
+    var customResource = resourceData.toBuilder().isPackageCustom(true).build();
 
     var resourcePut =
       resourcesConverter.convertToRmApiCustomResourcePutRequest(getResourcePutRequest(
         new ResourcePutDataAttributes()
           .withIsSelected(true)
-          .withUrl("test url")), title);
+          .withUrl("test url")), customResource);
     assertEquals("test url", resourcePut.getUrl());
   }
 
   @Test
   void shouldCreateRequestWithOldDataExceptEmbargoWhenUpdateFieldsAreMissing() {
-    var customerResourcesBuilder = resourceData.getCustomerResourcesList().getFirst().toBuilder();
-    var resources = customerResourcesBuilder.isPackageCustom(true).build();
-    var title = resourceData.toBuilder().customerResourcesList(singletonList(resources)).build();
+    var customResource = resourceData.toBuilder().isPackageCustom(true).build();
 
     var resourcePut = resourcesConverter.convertToRmApiCustomResourcePutRequest(
       getResourcePutRequest(new ResourcePutDataAttributes()),
-      title
+      customResource
     );
     assertEquals(OLD_PROXY_ID, resourcePut.getProxy().getId());
     assertFalse(resourcePut.getProxy().getInherited());
     assertEquals(OLD_COVERAGE_STATEMENT, resourcePut.getCoverageStatement());
     assertEquals(OLD_URL, resourcePut.getUrl());
-    assertEquals(OLD_VISIBILITY_DATA, resourcePut.getIsHidden());
+    // visibility is not sent when not requested, so HoldingsIQ keeps the current visibility
+    assertNull(resourcePut.getVisibilityDetails());
     assertNull(resourcePut.getCustomEmbargoPeriod());
+  }
+
+  private static List<Visibility> allCategories(boolean hidden) {
+    var reason = hidden ? "Hidden by Customer" : null;
+    return of(new Visibility("PF", hidden, reason), new Visibility("FTF", hidden, reason),
+      new Visibility("MARC", hidden, reason));
   }
 }

@@ -41,6 +41,7 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -72,6 +73,8 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
   // RMAPI stub response files
   private static final String RMAPI_TITLES_SEARCH_RESPONSE =
     "responses/rmapi/titles/searchTitles.json";
+  private static final String RMAPI_TITLE_WITH_RELATIONSHIPS_RESPONSE =
+    "responses/rmapi/titles/get-title-by-id-with-relationships-response.json";
   private static final String RMAPI_TITLE_BY_ID_RESPONSE =
     "responses/rmapi/titles/get-title-by-id-response.json";
   private static final String RMAPI_TITLE_BY_ID_2_RESPONSE =
@@ -87,11 +90,11 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
   private static final String RMAPI_PACKAGE_400_RESPONSE =
     "responses/rmapi/packages/post-package-400-error-response.json";
   private static final String RMAPI_RESOURCE_UPDATED_RESPONSE =
-    "responses/rmapi/resources/get-custom-resource-updated-response.json";
+    "responses/rmapi/titles/get-custom-title-updated-response.json";
   private static final String RMAPI_RESOURCE_UPDATED_TITLE_NAME_RESPONSE =
-    "responses/rmapi/resources/get-custom-resource-updated-title-name-response.json";
+    "responses/rmapi/titles/get-custom-title-updated-name-response.json";
   private static final String RMAPI_MANAGED_RESOURCE_UPDATED_RESPONSE =
-    "responses/rmapi/resources/get-managed-resource-updated-response.json";
+    "responses/rmapi/titles/get-managed-title-updated-response.json";
 
   // KB-EBSCO expected response files
   private static final String EXPECTED_TITLES_RESPONSE =
@@ -123,7 +126,7 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
   private static final String PUT_TITLE_NULL_NAME_REQUEST =
     "requests/kb-ebsco/title/put-title-null-name.json";
   private static final String RMAPI_PUT_RESOURCE_REQUEST =
-    "requests/rmapi/resources/put-custom-resource-is-selected-multiple-attributes.json";
+    "requests/rmapi/titles/put-custom-title.json";
 
   private String credentialsId;
 
@@ -147,7 +150,7 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
   void shouldReturnTitlesOnGet() {
     mockSearchTitles(RMAPI_TITLES_SEARCH_RESPONSE);
 
-    var actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "?page=1&filter[name]=Mind&sort=name").asString();
+    var actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "?page=1&q=Mind&q[field]=name&sort=name").asString();
     assertJsonEqual(readFile(EXPECTED_TITLES_RESPONSE), actualResponse);
   }
 
@@ -155,7 +158,7 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
   void shouldReturnTitlesOnGetWithResources() {
     mockSearchTitles(RMAPI_TITLES_SEARCH_RESPONSE);
 
-    var resourcePath = withInclude(EHOLDINGS_TITLES_PATH + "?page=1&filter[name]=Mind&sort=name", "resources");
+    var resourcePath = withInclude(EHOLDINGS_TITLES_PATH + "?page=1&q=Mind&q[field]=name&sort=name", "resources");
     var actualResponse = getWithOk(resourcePath).asString();
 
     assertJsonEqual(readFile(EXPECTED_TITLES_WITH_RESOURCES_RESPONSE), actualResponse);
@@ -279,14 +282,14 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
   void shouldReturnTitlesOnSearchByPackageIds() {
     mockSearchTitles(RMAPI_TITLES_SEARCH_RESPONSE);
 
-    var queryParam = "?filter[packageIds]=1&filter[packageIds]=2&filter[packageIds]=3&filter[name]=Mind";
+    var queryParam = "?filter[packageIds]=1&filter[packageIds]=2&filter[packageIds]=3&q=Mind&q[field]=name";
     var actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + queryParam).asString();
     assertJsonEqual(readFile(EXPECTED_TITLES_RESPONSE), actualResponse);
   }
 
   @Test
   void shouldReturn400ValidationErrorForPackageIds() {
-    var queryParam = "?filter[packageIds]=1&filter[packageIds]=abc&filter[name]=Mind";
+    var queryParam = "?filter[packageIds]=1&filter[packageIds]=abc&q=Mind&q[field]=name";
     var error = getWithStatus(EHOLDINGS_TITLES_PATH + queryParam, SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid Query Parameter for filter[packageIds]");
@@ -294,7 +297,7 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturn400IfCountOutOfRange() {
-    var error = getWithStatus(EHOLDINGS_TITLES_PATH + "?count=1000&page=1&filter[name]=Mind&sort=name",
+    var error = getWithStatus(EHOLDINGS_TITLES_PATH + "?count=1000&page=1&q=Mind&q[field]=name&sort=name",
       SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "parameter value {1000} is not valid");
@@ -304,7 +307,7 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
   void shouldReturn500WhenRmApiReturns500Error() {
     mockGet(matching(titlesRmApi() + ".*"), SC_INTERNAL_SERVER_ERROR);
 
-    var resourcePath = EHOLDINGS_TITLES_PATH + "?filter[name]=news";
+    var resourcePath = EHOLDINGS_TITLES_PATH + "?q=news&q[field]=name";
     var error = getWithStatus(resourcePath, SC_INTERNAL_SERVER_ERROR).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid RMAPI response");
@@ -414,7 +417,7 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
   @Test
   void shouldReturn400WhenInvalidPostRequest() {
     mockPost(
-      WireMock.equalTo(packageTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID)),
+      WireMock.equalTo(customTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID)),
       readFile(RMAPI_PACKAGE_400_RESPONSE),
       SC_BAD_REQUEST);
 
@@ -430,7 +433,7 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
     var actualResponse = putTitle(null);
     assertJsonEqual(readFile(EXPECTED_UPDATED_TITLE_RESPONSE), actualResponse);
 
-    verifyPut(WireMock.equalTo(resourcesRmApi(CUSTOM_VENDOR_ID, CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID)),
+    verifyPut(WireMock.equalTo(resourcesRmApi(CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID)),
       equalToJson(readFile(RMAPI_PUT_RESOURCE_REQUEST)));
   }
 
@@ -507,7 +510,7 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
 
   private String putTitle(String updatedResourceResponse, List<String> tags) {
     mockGet(WireMock.equalTo(titlesRmApi(CUSTOM_TITLE_ID)), updatedResourceResponse);
-    mockPut(matching(resourcesRmApi(CUSTOM_VENDOR_ID, CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID)), SC_NO_CONTENT);
+    mockPut(matching(resourcesRmApi(CUSTOM_PACKAGE_ID, CUSTOM_TITLE_ID)), SC_NO_CONTENT);
 
     var titleToBeUpdated = readJsonFile(PUT_TITLE_REQUEST, TitlePutRequest.class);
     if (tags != null) {
@@ -518,7 +521,7 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
   }
 
   private ExtractableResponse<Response> postTitle(List<String> tags) {
-    mockPost(WireMock.equalTo(packageTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID)),
+    mockPost(WireMock.equalTo(customTitlesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID)),
       readFile(RMAPI_POST_TITLE_RESPONSE), SC_OK);
     mockGet(matching(titlesRmApi(STUB_TITLE_ID)), readFile(RMAPI_TITLE_FOR_POST_RESPONSE));
 
@@ -535,6 +538,104 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
 
   private void mockGetTitleById(int titleId, String responseFile) {
     mockGet(WireMock.equalTo(titlesRmApi(titleId)), readFile(responseFile));
+  }
+
+  @Test
+  void shouldMapLegacyFilterNameToSearchOnGet() {
+    mockSearchTitles(RMAPI_TITLES_SEARCH_RESPONSE);
+
+    getWithOk(EHOLDINGS_TITLES_PATH + "?filter[name]=Mind");
+
+    wm.verify(1, WireMock.getRequestedFor(WireMock.urlPathEqualTo(titlesRmApi()))
+      .withQueryParam("searchfield", WireMock.equalTo("titlename"))
+      .withQueryParam("search", WireMock.equalTo("Mind")));
+  }
+
+  @Test
+  void shouldMapLegacyFilterIsxnToSearchOnGet() {
+    mockSearchTitles(RMAPI_TITLES_SEARCH_RESPONSE);
+
+    getWithOk(EHOLDINGS_TITLES_PATH + "?filter[isxn]=1050-3331");
+
+    wm.verify(1, WireMock.getRequestedFor(WireMock.urlPathEqualTo(titlesRmApi()))
+      .withQueryParam("searchfield", WireMock.equalTo("isxn"))
+      .withQueryParam("search", WireMock.equalTo("1050-3331")));
+  }
+
+  @Test
+  void shouldPreferQueryOverLegacyFilterOnGet() {
+    mockSearchTitles(RMAPI_TITLES_SEARCH_RESPONSE);
+
+    getWithOk(EHOLDINGS_TITLES_PATH + "?q=Mind&q[field]=subject&filter[name]=Other");
+
+    wm.verify(1, WireMock.getRequestedFor(WireMock.urlPathEqualTo(titlesRmApi()))
+      .withQueryParam("searchfield", WireMock.equalTo("subject"))
+      .withQueryParam("search", WireMock.equalTo("Mind")));
+  }
+
+  @Test
+  void shouldSendZdbidAndAccessFiltersToRmApi() {
+    mockSearchTitles(RMAPI_TITLES_SEARCH_RESPONSE);
+
+    var queryParam = "?q=2071469-8&q[field]=zdbid&filter[access]=public";
+    getWithOk(EHOLDINGS_TITLES_PATH + queryParam);
+
+    wm.verify(1, WireMock.getRequestedFor(WireMock.urlPathEqualTo(titlesRmApi()))
+      .withQueryParam("searchfield", WireMock.equalTo("zdbid"))
+      .withQueryParam("search", WireMock.equalTo("2071469-8"))
+      .withQueryParam("packagefreeaccess", WireMock.equalTo("true"))
+      .withoutQueryParam("consortia"));
+  }
+
+  @Test
+  void shouldReturn400WhenFilterAccessIsInvalid() {
+    var queryParam = "?q=Mind&q[field]=name&filter[access]=free";
+    var error = getWithStatus(EHOLDINGS_TITLES_PATH + queryParam, SC_BAD_REQUEST).as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid Query Parameter for filter[access]");
+  }
+
+  @Test
+  void shouldReturn400WhenQueryIsMissing() {
+    var error = getWithStatus(EHOLDINGS_TITLES_PATH + "?q[field]=name", SC_BAD_REQUEST).as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid Query Parameter for q: is required");
+  }
+
+  @Test
+  void shouldReturn400WhenQueryFieldIsInvalid() {
+    var queryParam = "?q=Mind&q[field]=bogus";
+    var error = getWithStatus(EHOLDINGS_TITLES_PATH + queryParam, SC_BAD_REQUEST).as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid Query Parameter for q[field]");
+  }
+
+  @Test
+  void shouldReturnTitleRelationshipsWhenIncluded() {
+    mockSearchTitles(RMAPI_TITLE_WITH_RELATIONSHIPS_RESPONSE);
+
+    var title = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=relationships").as(Title.class);
+
+    wm.verify(1, WireMock.getRequestedFor(WireMock.urlPathEqualTo(titlesRmApi(STUB_TITLE_ID)))
+      .withQueryParam("includerelationships", WireMock.equalTo("true")));
+    var relationships = title.getData().getAttributes().getTitleRelationships();
+    assertEquals(1, relationships.size());
+    assertEquals(42, relationships.getFirst().getId());
+    assertEquals("CONTINUED_BY", relationships.getFirst().getType());
+    assertEquals("2020-01-01T00:00:00Z", relationships.getFirst().getDate());
+    assertEquals(4444, relationships.getFirst().getTarget().getTitleId());
+    assertEquals("Continued Title", relationships.getFirst().getTarget().getName());
+  }
+
+  @Test
+  void shouldNotReturnTitleRelationshipsWhenNotIncluded() {
+    mockSearchTitles(RMAPI_TITLE_BY_ID_RESPONSE);
+
+    var response = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID).asString();
+
+    wm.verify(1, WireMock.getRequestedFor(WireMock.urlPathEqualTo(titlesRmApi(STUB_TITLE_ID)))
+      .withoutQueryParam("includerelationships"));
+    assertFalse(response.contains("titleRelationships"));
   }
 
   private void mockSearchTitles(String responseFile) {
