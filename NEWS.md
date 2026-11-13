@@ -27,6 +27,7 @@
 * Fix error messages format received from HoldingsIQ. ([MODKBEKBJ-826](https://folio-org.atlassian.net/browse/MODKBEKBJ-826))
 * Fix updater not returned on get access-types collection. ([MODKBEKBJ-842](https://folio-org.atlassian.net/browse/MODKBEKBJ-842))
 * Return 422 on post package validation errors ([MODKBEKBJ-862](https://folio-org.atlassian.net/browse/MODKBEKBJ-862))
+* Fix missing access status type and tags values when filtering packages. ([MODKBEKBJ-863](https://folio-org.atlassian.net/browse/MODKBEKBJ-873))
 
 ### Tech Dept
 * Set "permissions: contents: read" in maven.yml ([FOLIO-4553](https://folio-org.atlassian.net/browse/FOLIO-4553))
