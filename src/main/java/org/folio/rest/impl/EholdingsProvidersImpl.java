@@ -1,6 +1,5 @@
 package org.folio.rest.impl;
 
-import static java.util.Collections.emptyList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.folio.common.ListUtils.parseByComma;
 import static org.folio.db.RowSetUtils.toUUID;
@@ -228,12 +227,13 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     var template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
-      template.requestAction(
-        context -> filteredEntitiesLoader.fetchPackagesByTagFilter(TagFilter.from(filter), context));
+      template.requestAction(context -> filteredEntitiesLoader
+        .fetchPackagesByTagFilter(TagFilter.from(filter), context)
+        .thenCompose(result -> loadAccessTypes(result, includedObjects, context)));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
         .fetchPackagesByAccessTypeFilter(AccessTypeFilter.from(filter), context)
-        .thenApply(packages -> new PackageCollectionResult(packages, emptyList())));
+        .thenCompose(packages -> loadTagsAndAccessTypes(packages, includedObjects, context)));
     } else {
       template.requestAction(retrieveFilteredPackages(parsedProviderId, filter, includedObjects));
     }
@@ -253,6 +253,19 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       context.getPackagesService()
         .retrievePackages(providerId, packageFilter, pageable)
         .thenCompose(packages -> loadTagsAndAccessTypes(packages, includedObjects, context));
+  }
+
+  private CompletableFuture<PackageCollectionResult> loadAccessTypes(PackageCollectionResult result,
+                                                                     List<String> includedObjects,
+                                                                     RmApiTemplateContext context) {
+    if (!includedObjects.contains(ACCESS_TYPE_INCLUDE_PARAM)) {
+      return completedFuture(result);
+    }
+    var packageIds = result.packages().getPackagesList().stream()
+      .map(packageData -> packageData.getVendorId() + "-" + packageData.getPackageId())
+      .toList();
+    return relatedEntitiesLoader.loadAccessTypes(packageIds, RecordType.PACKAGE, context)
+      .thenApply(accessTypes -> new PackageCollectionResult(result.packages(), result.dbPackages(), accessTypes));
   }
 
   private CompletableFuture<PackageCollectionResult> loadTagsAndAccessTypes(Packages packages,
