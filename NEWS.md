@@ -30,7 +30,7 @@
 
 ### Tech Dept
 * Set "permissions: contents: read" in maven.yml ([FOLIO-4553](https://folio-org.atlassian.net/browse/FOLIO-4553))
-* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+* Downgrade Liquibase from 5 to 4 ([MODKBEKBJ-876](https://folio-org.atlassian.net/browse/MODKBEKBJ-876))
 
 ### Dependencies
 * Bump `LIB_NAME` from `OLD_VERSION` to `NEW_VERSION`
