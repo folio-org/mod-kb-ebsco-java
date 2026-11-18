@@ -1,3 +1,7 @@
+## v7.0.3 2026-11-18
+### Bug fixes
+* Downgrade Liquibase from 5 to 4 ([MODKBEKBJ-876](https://folio-org.atlassian.net/browse/MODKBEKBJ-876))
+
 ## v7.0.2 2026-07-29
 ### Bug fixes
 * Fix updater not returned on get access-types collection. ([MODKBEKBJ-842](https://folio-org.atlassian.net/browse/MODKBEKBJ-842))
