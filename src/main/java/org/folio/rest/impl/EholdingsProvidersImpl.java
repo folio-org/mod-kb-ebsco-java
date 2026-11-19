@@ -1,6 +1,5 @@
 package org.folio.rest.impl;
 
-import static java.util.Collections.emptyList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.folio.common.ListUtils.parseByComma;
 import static org.folio.db.RowSetUtils.toUUID;
@@ -15,6 +14,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,6 +30,8 @@ import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.properties.common.SearchProperties;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
+import org.folio.repository.accesstypes.DbAccessType;
+import org.folio.repository.packages.DbPackage;
 import org.folio.repository.packages.PackageRepository;
 import org.folio.repository.providers.DbProvider;
 import org.folio.repository.providers.ProviderRepository;
@@ -139,7 +141,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getProvidersService().retrieveProvider(parseProviderId, include)
-          .thenCompose(result -> loadTags(result, context))
+          .thenCompose(result -> loadProviderTags(result, context))
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsProvidersByProviderIdResponse.respond404WithApplicationVndApiJson(
@@ -228,12 +230,13 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     var template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
-      template.requestAction(
-        context -> filteredEntitiesLoader.fetchPackagesByTagFilter(TagFilter.from(filter), context));
+      template.requestAction(context -> filteredEntitiesLoader
+        .fetchPackagesByTagFilter(TagFilter.from(filter), context)
+        .thenCompose(result -> loadAccessTypes(result, includedObjects, context)));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
         .fetchPackagesByAccessTypeFilter(AccessTypeFilter.from(filter), context)
-        .thenApply(packages -> new PackageCollectionResult(packages, emptyList())));
+        .thenCompose(packages -> loadTagsAndAccessTypes(packages, includedObjects, context)));
     } else {
       template.requestAction(retrieveFilteredPackages(parsedProviderId, filter, includedObjects));
     }
@@ -255,23 +258,40 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         .thenCompose(packages -> loadTagsAndAccessTypes(packages, includedObjects, context));
   }
 
+  private CompletableFuture<PackageCollectionResult> loadAccessTypes(PackageCollectionResult result,
+                                                                     List<String> includedObjects,
+                                                                     RmApiTemplateContext context) {
+    return loadAccessTypes(result.packages(), includedObjects, context)
+      .thenApply(accessTypes -> new PackageCollectionResult(result.packages(), result.dbPackages(), accessTypes));
+  }
+
+  private CompletableFuture<Map<String, DbAccessType>> loadAccessTypes(Packages packages,
+                                                                       List<String> includedObjects,
+                                                                       RmApiTemplateContext context) {
+    if (!includedObjects.contains(ACCESS_TYPE_INCLUDE_PARAM)) {
+      return completedFuture(Collections.emptyMap());
+    }
+    var packageIds = packages.getPackagesList().stream()
+      .map(packageData -> packageData.getVendorId() + "-" + packageData.getPackageId())
+      .toList();
+    return relatedEntitiesLoader.loadAccessTypes(packageIds, RecordType.PACKAGE, context);
+  }
+
   private CompletableFuture<PackageCollectionResult> loadTagsAndAccessTypes(Packages packages,
                                                                             List<String> includedObjects,
                                                                             RmApiTemplateContext context) {
-    var credentialsId = toUUID(context.getCredentialsId());
-    var tagsFuture = packageRepository.findByIds(getPackageIds(packages), credentialsId,
-      context.getRequestContext().getTenant());
-    if (includedObjects.contains(ACCESS_TYPE_INCLUDE_PARAM)) {
-      var packageIds = packages.getPackagesList().stream()
-        .map(packageData -> packageData.getVendorId() + "-" + packageData.getPackageId())
-        .toList();
-      return tagsFuture.thenCombine(relatedEntitiesLoader.loadAccessTypes(packageIds, RecordType.PACKAGE, context),
+    return loadTags(packages, context)
+      .thenCombine(loadAccessTypes(packages, includedObjects, context),
         (dbPackages, accessTypes) -> new PackageCollectionResult(packages, dbPackages, accessTypes));
-    }
-    return tagsFuture.thenApply(dbPackages -> new PackageCollectionResult(packages, dbPackages));
   }
 
-  private CompletableFuture<VendorResult> loadTags(VendorResult result, RmApiTemplateContext context) {
+  private CompletableFuture<List<DbPackage>> loadTags(Packages packages, RmApiTemplateContext context) {
+    var credentialsId = toUUID(context.getCredentialsId());
+    return packageRepository.findByIds(getPackageIds(packages), credentialsId,
+      context.getRequestContext().getTenant());
+  }
+
+  private CompletableFuture<VendorResult> loadProviderTags(VendorResult result, RmApiTemplateContext context) {
     RecordKey recordKey = RecordKey.builder()
       .recordId(String.valueOf(result.getVendor().getVendorId()))
       .recordType(RecordType.PROVIDER)

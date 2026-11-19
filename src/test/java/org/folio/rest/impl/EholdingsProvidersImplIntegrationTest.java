@@ -221,6 +221,71 @@ class EholdingsProvidersImplIntegrationTest extends IntegrationTestBase {
   }
 
   @Test
+  void shouldReturnTagsAndAccessTypeOnSearchByProviderIdAndAccessTypeWhenIncludeParamPassed() {
+    var accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    var expectedAccessTypeId = accessTypes.getFirst().getId();
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, expectedAccessTypeId, vertx);
+    saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+
+    setUpPackage(vertx, configuration.getId(), STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+
+    var endpoint = withAccessTypeFilters(PROVIDER_PACKAGES + "?include=accessType", STUB_ACCESS_TYPE_NAME);
+    var packageItem = getWithOk(endpoint).as(PackageCollection.class).getData().getFirst();
+
+    assertThat(packageItem.getAttributes().getTags().getTagList(), containsInAnyOrder(STUB_TAG_VALUE));
+    assertFalse(packageItem.getIncluded().isEmpty());
+    assertEquals(expectedAccessTypeId, packageItem.getRelationships().getAccessType().getData().getId());
+  }
+
+  @Test
+  void shouldReturnTagsButNoAccessTypeOnSearchByProviderIdAndAccessTypeWhenIncludeParamNotPassed() {
+    var accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.getFirst().getId(), vertx);
+    saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+
+    setUpPackage(vertx, configuration.getId(), STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+
+    var endpoint = withAccessTypeFilters(PROVIDER_PACKAGES, STUB_ACCESS_TYPE_NAME);
+    var packageItem = getWithOk(endpoint).as(PackageCollection.class).getData().getFirst();
+
+    assertThat(packageItem.getAttributes().getTags().getTagList(), containsInAnyOrder(STUB_TAG_VALUE));
+    assertTrue(packageItem.getIncluded().isEmpty());
+    assertNull(packageItem.getRelationships().getAccessType());
+  }
+
+  @Test
+  void shouldReturnAccessTypeOnSearchByProviderIdAndTagsWhenIncludeParamPassed() {
+    var accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    var expectedAccessTypeId = accessTypes.getFirst().getId();
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, expectedAccessTypeId, vertx);
+    saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+
+    setUpPackage(vertx, configuration.getId(), STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+
+    var endpoint = withTagFilters(PROVIDER_PACKAGES + "?include=accessType", STUB_TAG_VALUE);
+    var packageItem = getWithOk(endpoint).as(PackageCollection.class).getData().getFirst();
+
+    assertThat(packageItem.getAttributes().getTags().getTagList(), containsInAnyOrder(STUB_TAG_VALUE));
+    assertFalse(packageItem.getIncluded().isEmpty());
+    assertEquals(expectedAccessTypeId, packageItem.getRelationships().getAccessType().getData().getId());
+  }
+
+  @Test
+  void shouldReturnTagsOnUnfilteredProviderPackagesList() {
+    saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE_2);
+    setUpPackage(vertx, configuration.getId(), STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+    mockGet(matching(providerPackagesRmApi(STUB_VENDOR_ID) + ".*"),
+      readFile("responses/rmapi/packages/get-packages-by-provider-id.json"));
+
+    var packages = getWithOk(PROVIDER_PACKAGES + "?include=accessType&page=1&count=100")
+      .as(PackageCollection.class).getData();
+
+    assertThat(packages.getFirst().getAttributes().getTags().getTagList(),
+      containsInAnyOrder(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+  }
+
+  @Test
   void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByAccessType() {
     var accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
     insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.getFirst().getId(), vertx);
