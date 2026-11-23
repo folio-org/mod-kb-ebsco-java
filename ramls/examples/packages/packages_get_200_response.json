@@ -20,10 +20,23 @@
         "titleCount": 9590,
         "vendorId": 583,
         "vendorName": "ABC-CLIO",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        }
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ]
       },
       "relationships": {
         "resources": {
@@ -58,10 +71,23 @@
         "titleCount": 693,
         "vendorId": 583,
         "vendorName": "ABC-CLIO",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        }
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ]
       },
       "relationships": {
         "resources": {
@@ -96,10 +122,23 @@
         "titleCount": 1624,
         "vendorId": 583,
         "vendorName": "ABC-CLIO",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        }
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ]
       },
       "relationships": {
         "resources": {
@@ -139,10 +178,23 @@
         "titleCount": 359,
         "vendorId": 583,
         "vendorName": "ABC-CLIO",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        }
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ]
       },
       "relationships": {
         "resources": {
@@ -177,10 +229,23 @@
         "titleCount": 221,
         "vendorId": 583,
         "vendorName": "ABC-CLIO",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        }
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ]
       },
       "relationships": {
         "resources": {
@@ -220,10 +285,23 @@
         "titleCount": 302,
         "vendorId": 583,
         "vendorName": "ABC-CLIO",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        }
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ]
       },
       "relationships": {
         "resources": {
@@ -258,10 +336,23 @@
         "titleCount": 169,
         "vendorId": 583,
         "vendorName": "ABC-CLIO",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        }
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ]
       },
       "relationships": {
         "resources": {
@@ -301,10 +392,23 @@
         "titleCount": 339,
         "vendorId": 203,
         "vendorName": "Credo Reference",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        }
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ]
       },
       "relationships": {
         "resources": {
@@ -339,10 +443,23 @@
         "titleCount": 74,
         "vendorId": 203,
         "vendorName": "Credo Reference",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        }
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ]
       },
       "relationships": {
         "resources": {
@@ -382,10 +499,23 @@
         "titleCount": 10,
         "vendorId": 203,
         "vendorName": "Credo Reference",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        }
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ]
       },
       "relationships": {
         "resources": {
@@ -420,10 +550,23 @@
         "titleCount": 1,
         "vendorId": 1075,
         "vendorName": "ABC Chemistry",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        }
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ]
       },
       "relationships": {
         "resources": {

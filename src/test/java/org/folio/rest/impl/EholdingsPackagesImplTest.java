@@ -360,7 +360,7 @@ class EholdingsPackagesImplTest {
   private void invokeGetResources(ResourceFilter filter) {
     impl.getEholdingsPackagesResourcesByPackageId(filter.getPackageId(), filter.getFilterTags(),
       filter.getFilterAccessType(), filter.getQuery(), filter.getQueryField(), filter.getFilterSelected(),
-      filter.getFilterType(), filter.getFilterAccess(), null, null, null, null, filter.getSort(),
+      filter.getFilterType(), filter.getFilterAccess(), filter.getSort(),
       filter.getPage(), filter.getCount(), OKAPI_HEADERS, asyncResultHandler, null);
   }
 }

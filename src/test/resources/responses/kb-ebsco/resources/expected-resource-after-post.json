@@ -61,10 +61,6 @@
       "url": "https://publisher.abc-clio.com/9780313068003/",
       "providerId": 19,
       "providerName": "ABC-CLIO",
-      "visibilityData": {
-        "isHidden": true,
-        "reason": ""
-      },
       "visibility": [
         {
           "category": "PF",

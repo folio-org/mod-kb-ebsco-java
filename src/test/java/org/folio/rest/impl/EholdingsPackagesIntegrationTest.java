@@ -1010,17 +1010,6 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
   }
 
   @Test
-  void shouldMapLegacyFilterNameToSearchOnGetWithResources() {
-    mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
-
-    getWithOk(resourcesPath(RESOURCES_FIXTURE_PACKAGE_ID) + "?filter[publisher]=academic");
-
-    wm.verify(1, getRequestedFor(urlPathEqualTo(packageTitlesRmApi(STUB_PACKAGE_ID)))
-      .withQueryParam("searchfield", WireMock.equalTo("publisher"))
-      .withQueryParam("search", WireMock.equalTo("academic")));
-  }
-
-  @Test
   void shouldReturn400WhenFilterAccessIsInvalidOnGetWithResources() {
     var error = getWithStatus(resourcesPath(FULL_PACKAGE_ID) + "?filter[access]=free", SC_BAD_REQUEST)
       .as(JsonapiError.class);

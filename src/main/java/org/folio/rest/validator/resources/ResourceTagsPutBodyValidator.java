@@ -1,8 +1,9 @@
-package org.folio.rest.validator;
+package org.folio.rest.validator.resources;
 
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ResourceTagsDataAttributes;
 import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
+import org.folio.rest.validator.ValidatorUtil;
 import org.springframework.stereotype.Component;
 
 @Component

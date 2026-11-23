@@ -70,10 +70,6 @@
       "url": "https://ebookcentral.proquest.com/lib/[[SiteID]]/detail.action?docID=1722033",
       "providerId": 22,
       "providerName": "Proquest Info & Learning Co",
-      "visibilityData": {
-        "isHidden": true,
-        "reason": ""
-      },
       "visibility": [
         {
           "category": "PF",
@@ -216,10 +212,23 @@
         "providerName": "Proquest Info & Learning Co",
         "selectedCount": 1305491,
         "titleCount": 1305491,
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        },
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ],
         "allowKbToAddTitles": true,
         "packageToken": {
           "factName": "[[SiteID]]",

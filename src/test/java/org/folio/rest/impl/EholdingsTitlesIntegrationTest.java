@@ -541,39 +541,6 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
   }
 
   @Test
-  void shouldMapLegacyFilterNameToSearchOnGet() {
-    mockSearchTitles(RMAPI_TITLES_SEARCH_RESPONSE);
-
-    getWithOk(EHOLDINGS_TITLES_PATH + "?filter[name]=Mind");
-
-    wm.verify(1, WireMock.getRequestedFor(WireMock.urlPathEqualTo(titlesRmApi()))
-      .withQueryParam("searchfield", WireMock.equalTo("titlename"))
-      .withQueryParam("search", WireMock.equalTo("Mind")));
-  }
-
-  @Test
-  void shouldMapLegacyFilterIsxnToSearchOnGet() {
-    mockSearchTitles(RMAPI_TITLES_SEARCH_RESPONSE);
-
-    getWithOk(EHOLDINGS_TITLES_PATH + "?filter[isxn]=1050-3331");
-
-    wm.verify(1, WireMock.getRequestedFor(WireMock.urlPathEqualTo(titlesRmApi()))
-      .withQueryParam("searchfield", WireMock.equalTo("isxn"))
-      .withQueryParam("search", WireMock.equalTo("1050-3331")));
-  }
-
-  @Test
-  void shouldPreferQueryOverLegacyFilterOnGet() {
-    mockSearchTitles(RMAPI_TITLES_SEARCH_RESPONSE);
-
-    getWithOk(EHOLDINGS_TITLES_PATH + "?q=Mind&q[field]=subject&filter[name]=Other");
-
-    wm.verify(1, WireMock.getRequestedFor(WireMock.urlPathEqualTo(titlesRmApi()))
-      .withQueryParam("searchfield", WireMock.equalTo("subject"))
-      .withQueryParam("search", WireMock.equalTo("Mind")));
-  }
-
-  @Test
   void shouldSendZdbidAndAccessFiltersToRmApi() {
     mockSearchTitles(RMAPI_TITLES_SEARCH_RESPONSE);
 

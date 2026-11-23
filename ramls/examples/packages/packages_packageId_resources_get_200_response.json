@@ -57,10 +57,23 @@
         "vendorName": "EBSCO",
         "providerId": 19,
         "providerName": "EBSCO",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        },
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ],
         "managedCoverages": [{
           "beginCoverage": "2008-12-01",
           "endCoverage": ""
@@ -159,10 +172,23 @@
         "vendorName": "EBSCO",
         "providerId": 19,
         "providerName": "EBSCO",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        },
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ],
         "managedCoverages": [{
           "beginCoverage": "2006-12-01",
           "endCoverage": ""

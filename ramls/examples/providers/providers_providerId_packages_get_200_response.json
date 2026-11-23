@@ -19,10 +19,23 @@
       "titleCount": 0,
       "vendorId": 0,
       "vendorName": "System Account",
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      }
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "FTF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "MARC",
+          "hidden": false,
+          "reason": ""
+        }
+      ]
     },
     "relationships": {
       "resources": {

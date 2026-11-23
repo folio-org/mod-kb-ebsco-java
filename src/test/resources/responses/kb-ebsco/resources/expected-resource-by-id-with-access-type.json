@@ -55,10 +55,6 @@
       "url": "https://publisher.abc-clio.com/9780313068003/",
       "providerId": 19,
       "providerName": "ABC-CLIO",
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
       "managedCoverages": [
         {
           "beginCoverage": "2005-01-01",

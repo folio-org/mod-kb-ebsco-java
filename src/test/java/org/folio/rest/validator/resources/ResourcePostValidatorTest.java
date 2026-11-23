@@ -1,4 +1,4 @@
-package org.folio.rest.validator;
+package org.folio.rest.validator.resources;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

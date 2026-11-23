@@ -13,7 +13,6 @@ import org.folio.holdingsiq.model.Identifier;
 import org.folio.holdingsiq.model.ProxyUrl;
 import org.folio.holdingsiq.model.Resource;
 import org.folio.holdingsiq.model.Subject;
-import org.folio.holdingsiq.model.Visibility;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.converter.common.attr.VisibilityDetailsMapper;
 import org.folio.rest.converter.titles.TitleRelationshipMapper;
@@ -23,7 +22,6 @@ import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.ProxyUrlDto;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
-import org.folio.rest.jaxrs.model.VisibilityData;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -35,7 +33,6 @@ public class CommonResourceConverter {
   private final Converter<List<Identifier>, List<org.folio.rest.jaxrs.model.Identifier>> identifiersConverter;
   private final Converter<List<Subject>, List<TitleSubject>> subjectsConverter;
   private final Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> embargoPeriodConverter;
-  private final Converter<List<Visibility>, VisibilityData> visibilityConverter;
   private final Converter<List<CoverageDates>, List<Coverage>> coverageDatesConverter;
   private final Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>>
     alternateTitleConverter;
@@ -45,14 +42,12 @@ public class CommonResourceConverter {
     Converter<List<Identifier>, List<org.folio.rest.jaxrs.model.Identifier>> identifiersConverter,
     Converter<List<Subject>, List<TitleSubject>> subjectsConverter,
     Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> embargoPeriodConverter,
-    Converter<List<Visibility>, VisibilityData> visibilityConverter,
     Converter<List<CoverageDates>, List<Coverage>> coverageDatesConverter,
     Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> alternateTitleConverter) {
     this.contributorsConverter = contributorsConverter;
     this.identifiersConverter = identifiersConverter;
     this.subjectsConverter = subjectsConverter;
     this.embargoPeriodConverter = embargoPeriodConverter;
-    this.visibilityConverter = visibilityConverter;
     this.coverageDatesConverter = coverageDatesConverter;
     this.alternateTitleConverter = alternateTitleConverter;
   }
@@ -89,7 +84,6 @@ public class CommonResourceConverter {
       .withUrl(resource.getUrl())
       .withProviderId(resource.getVendorId())
       .withProviderName(resource.getVendorName())
-      .withVisibilityData(visibilityConverter.convert(resource.getVisibilityDetails()))
       .withVisibility(mapItemsNullable(resource.getVisibilityDetails(), VisibilityDetailsMapper::toApiVisibility))
       .withManagedCoverages(coverageDatesConverter.convert(resource.getManagedCoverageList()))
       .withCustomCoverages(coverageDatesConverter.convert(

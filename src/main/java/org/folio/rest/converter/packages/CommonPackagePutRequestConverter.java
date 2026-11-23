@@ -7,13 +7,11 @@ import org.folio.holdingsiq.model.AlternateName;
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Proxy;
-import org.folio.holdingsiq.model.Visibility;
+import org.folio.rest.converter.common.attr.VisibilityDetailsMapper;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.service.sanitizer.Sanitizer;
 
 public abstract class CommonPackagePutRequestConverter {
-
-  static final String HIDDEN_BY_CUSTOMER = "Hidden by Customer";
 
   private final Sanitizer<String> htmlSanitizer;
 
@@ -38,14 +36,9 @@ public abstract class CommonPackagePutRequestConverter {
       builder.customAltNames(convertCustomAltNames(attributes));
     }
 
-    builder.visibilityDetails(mapItems(attributes.getVisibility(), this::convertVisibility));
+    builder.visibilityDetails(VisibilityDetailsMapper.toRmApiVisibilityDetails(attributes.getVisibility()));
 
     return builder;
-  }
-
-  protected Visibility convertVisibility(org.folio.rest.jaxrs.model.Visibility pv) {
-    var reason = Boolean.TRUE.equals(pv.getHidden()) ? HIDDEN_BY_CUSTOMER : null;
-    return new Visibility(pv.getCategory().value(), pv.getHidden(), reason);
   }
 
   private void convertSimpleFields(PackagePutDataAttributes attributes, PackagePut.PackagePutBuilder builder) {

@@ -54,7 +54,6 @@ import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.ResourceTags;
 import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rest.jaxrs.model.Visibility;
 import org.folio.util.IntegrationTestBase;
 import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
@@ -270,19 +269,6 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
     assertEquals("CONTINUED_BY", relationships.getFirst().getType());
     assertEquals(STUB_MANAGED_TITLE_ID, relationships.getFirst().getSource().getTitleId());
     assertEquals(4444, relationships.getFirst().getTarget().getTitleId());
-  }
-
-  @Test
-  void shouldReturnVisibilityPerCategoryAlongsideVisibilityData() {
-    mockResource(RMAPI_GET_RESOURCE_BY_ID_SUCCESS);
-
-    var attributes = getWithOk(STUB_MANAGED_RESOURCE_PATH).as(Resource.class).getData().getAttributes();
-
-    assertTrue(attributes.getVisibilityData().getIsHidden());
-    assertEquals(List.of("PF", "FTF", "MARC"), attributes.getVisibility().stream()
-      .map(visibility -> visibility.getCategory().value())
-      .toList());
-    assertTrue(attributes.getVisibility().stream().allMatch(Visibility::getHidden));
   }
 
   @Test

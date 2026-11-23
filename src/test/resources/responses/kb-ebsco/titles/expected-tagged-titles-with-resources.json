@@ -99,10 +99,6 @@
             "url": "http://search.ebscohost.com/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=38624",
             "providerId": 19,
             "providerName": "EBSCO",
-            "visibilityData": {
-              "isHidden": false,
-              "reason": ""
-            },
             "managedCoverages": [
               {
                 "beginCoverage": "1996-01-01",
@@ -249,10 +245,6 @@
             "url": "http://search.ebscohost.com/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=38624",
             "providerId": 19,
             "providerName": "EBSCO",
-            "visibilityData": {
-              "isHidden": false,
-              "reason": ""
-            },
             "managedCoverages": [
               {
                 "beginCoverage": "1996-01-01",

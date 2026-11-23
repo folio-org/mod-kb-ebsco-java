@@ -40,7 +40,6 @@ import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.model.filter.AccessTypeFilter;
-import org.folio.rest.model.filter.LegacySearchParams;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.model.filter.TitleFilter;
 import org.folio.rest.util.ErrorUtil;
@@ -94,16 +93,12 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @HandleValidationErrors
   public void getEholdingsTitles(String query, String queryField, String queryType, List<String> filterTags,
                                  List<String> filterAccessType, String filterSelected, String filterType,
-                                 String filterName, String filterIsxn, String filterSubject, String filterPublisher,
                                  String filterAccess, List<String> filterPackageIds, String include, String sort,
                                  int page, int count, Map<String, String> okapiHeaders,
                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    var search = LegacySearchParams.resolve(query, queryField, filterName, filterIsxn, filterSubject,
-      filterPublisher);
-
     var filter = TitleFilter.builder()
-      .query(search.query())
-      .queryField(search.queryField())
+      .query(query)
+      .queryField(queryField)
       .queryType(queryType)
       .filterTags(filterTags)
       .filterAccessType(filterAccessType)
