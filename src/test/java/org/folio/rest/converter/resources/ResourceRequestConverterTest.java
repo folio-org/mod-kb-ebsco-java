@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.List;
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.ProxyUrl;
 import org.folio.holdingsiq.model.Resource;
@@ -20,7 +19,6 @@ import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.ProxyDto;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.Visibility.Category;
-import org.folio.rest.jaxrs.model.VisibilityData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -114,16 +112,6 @@ class ResourceRequestConverterTest {
   }
 
   @Test
-  void shouldCreateRequestToUpdateIsHiddenForCustomResource() {
-    var resourcePut = resourcesConverter.convertToRmApiCustomResourcePutRequest(getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withVisibilityData(new VisibilityData()
-          .withIsHidden(true))), resourceData);
-    assertEquals(allCategories(true), resourcePut.getVisibilityDetails());
-  }
-
-  @Test
   void shouldCreateRequestToUpdateVisibilityPerCategory() {
     var resourcePut = resourcesConverter.convertToRmApiResourcePutRequest(getResourcePutRequest(
       new ResourcePutDataAttributes()
@@ -147,20 +135,16 @@ class ResourceRequestConverterTest {
   }
 
   @Test
-  void shouldPreferVisibilityPerCategoryOverVisibilityData() {
-    var resourcePut = resourcesConverter.convertToRmApiResourcePutRequest(getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withVisibilityData(new VisibilityData().withIsHidden(true))
-        .withVisibility(of(
-          new org.folio.rest.jaxrs.model.Visibility().withCategory(Category.PF).withHidden(false)))), resourceData);
-    assertEquals(of(new Visibility("PF", false, null)), resourcePut.getVisibilityDetails());
-  }
-
-  @Test
   void shouldNotSendVisibilityWhenRequestDoesNotSetIt() {
     var resourcePut = resourcesConverter.convertToRmApiResourcePutRequest(getResourcePutRequest(
       new ResourcePutDataAttributes().withIsSelected(true)), resourceData);
+    assertNull(resourcePut.getVisibilityDetails());
+  }
+
+  @Test
+  void shouldNotSendVisibilityWhenRequestVisibilityIsEmpty() {
+    var resourcePut = resourcesConverter.convertToRmApiCustomResourcePutRequest(getResourcePutRequest(
+      new ResourcePutDataAttributes().withIsSelected(true).withVisibility(emptyList())), resourceData);
     assertNull(resourcePut.getVisibilityDetails());
   }
 
@@ -180,16 +164,6 @@ class ResourceRequestConverterTest {
         .withIsSelected(true)
         .withCoverageStatement("test coverage stmt")), resourceData);
     assertEquals("test coverage stmt", resourcePut.getCoverageStatement());
-  }
-
-  @Test
-  void shouldCreateRequestToUpdateIsHiddenForManagedResource() {
-    var resourcePut = resourcesConverter.convertToRmApiResourcePutRequest(getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withVisibilityData(new VisibilityData()
-          .withIsHidden(false))), resourceData);
-    assertEquals(allCategories(false), resourcePut.getVisibilityDetails());
   }
 
   @Test
@@ -260,11 +234,5 @@ class ResourceRequestConverterTest {
     // visibility is not sent when not requested, so HoldingsIQ keeps the current visibility
     assertNull(resourcePut.getVisibilityDetails());
     assertNull(resourcePut.getCustomEmbargoPeriod());
-  }
-
-  private static List<Visibility> allCategories(boolean hidden) {
-    var reason = hidden ? "Hidden by Customer" : null;
-    return of(new Visibility("PF", hidden, reason), new Visibility("FTF", hidden, reason),
-      new Visibility("MARC", hidden, reason));
   }
 }

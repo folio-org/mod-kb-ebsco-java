@@ -144,10 +144,6 @@
             "url": "http://www.123library.org/bookdetails/?id=31111",
             "providerId": 58251,
             "providerName": "123Library",
-            "visibilityData": {
-              "isHidden": false,
-              "reason": ""
-            },
             "managedCoverages": [],
             "customCoverages": []
           },
@@ -233,10 +229,6 @@
             "url": "https://www.dawsonera.com/abstract/9780730377924",
             "providerId": 977,
             "providerName": "Dawson Books Ltd.",
-            "visibilityData": {
-              "isHidden": false,
-              "reason": ""
-            },
             "managedCoverages": [
               {
                 "beginCoverage": "2011-01-01",
@@ -327,10 +319,6 @@
             "url": "http://search.ebscohost.com/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=399486",
             "providerId": 19,
             "providerName": "EBSCO",
-            "visibilityData": {
-              "isHidden": false,
-              "reason": ""
-            },
             "managedCoverages": [
               {
                 "beginCoverage": "2009-01-01",
@@ -421,10 +409,6 @@
             "url": "http://lib.myilibrary.com?id=329455",
             "providerId": 58388,
             "providerName": "Ingram Content Group, Inc.",
-            "visibilityData": {
-              "isHidden": false,
-              "reason": ""
-            },
             "managedCoverages": [
               {
                 "beginCoverage": "2011-01-01",
@@ -515,10 +499,6 @@
             "url": "https://ebookcentral.proquest.com/lib/[[SiteID]]/detail.action?docID=818686",
             "providerId": 22,
             "providerName": "Proquest Info & Learning Co",
-            "visibilityData": {
-              "isHidden": false,
-              "reason": ""
-            },
             "managedCoverages": [
               {
                 "beginCoverage": "2011-01-01",
@@ -609,10 +589,6 @@
             "url": "http://[[SiteID]].eblib.com/patron/FullRecord.aspx?p=818686",
             "providerId": 22,
             "providerName": "Proquest Info & Learning Co",
-            "visibilityData": {
-              "isHidden": false,
-              "reason": ""
-            },
             "managedCoverages": [
               {
                 "beginCoverage": "2011-01-01",

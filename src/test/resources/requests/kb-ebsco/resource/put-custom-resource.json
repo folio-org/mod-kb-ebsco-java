@@ -21,10 +21,20 @@
       "url": "https://hello",
       "providerId": 123356,
       "providerName": "API DEV GOVERNMENT CUSTOMER",
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false
+        },
+        {
+          "category": "FTF",
+          "hidden": false
+        },
+        {
+          "category": "MARC",
+          "hidden": false
+        }
+      ],
       "managedCoverages": [],
       "customCoverages": [
         {

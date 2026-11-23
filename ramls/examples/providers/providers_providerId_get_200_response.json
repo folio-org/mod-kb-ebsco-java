@@ -52,10 +52,23 @@
         "titleCount": 1,
         "vendorId": 419,
         "vendorName": "ecch",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        },
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ],
         "allowKbToAddTitles": null
       },
       "relationships": {
@@ -96,10 +109,23 @@
         "titleCount": 1,
         "vendorId": 419,
         "vendorName": "ecch",
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        },
+        "visibility": [
+          {
+            "category": "PF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "FTF",
+            "hidden": false,
+            "reason": ""
+          },
+          {
+            "category": "MARC",
+            "hidden": false,
+            "reason": ""
+          }
+        ],
         "allowKbToAddTitles": null
       },
       "relationships": {

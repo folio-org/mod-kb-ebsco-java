@@ -36,7 +36,6 @@ import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
 import org.folio.rest.model.filter.AccessTypeFilter;
-import org.folio.rest.model.filter.LegacySearchParams;
 import org.folio.rest.model.filter.PackageRecordFilter;
 import org.folio.rest.model.filter.ResourceFilter;
 import org.folio.rest.model.filter.TagFilter;
@@ -178,22 +177,18 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public void getEholdingsPackagesResourcesByPackageId(String packageId, List<String> filterTags,
                                                        List<String> filterAccessType, String query, String queryField,
                                                        String filterSelected, String filterType, String filterAccess,
-                                                       String filterName, String filterIsxn, String filterSubject,
-                                                       String filterPublisher, String sort, int page, int count,
+                                                       String sort, int page, int count,
                                                        Map<String, String> okapiHeaders,
                                                        Handler<AsyncResult<Response>> asyncResultHandler,
                                                        Context vertxContext) {
-    var search = LegacySearchParams.resolve(query, queryField, filterName, filterIsxn, filterSubject,
-      filterPublisher);
-
     var filter = ResourceFilter.builder()
       .packageId(packageId)
       .filterTags(filterTags)
       .filterAccessType(filterAccessType)
       .filterSelected(filterSelected)
       .filterType(filterType)
-      .query(search.query())
-      .queryField(search.queryField())
+      .query(query)
+      .queryField(queryField)
       .filterAccess(filterAccess)
       .sort(sort)
       .page(page)

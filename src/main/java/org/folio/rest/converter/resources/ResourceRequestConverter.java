@@ -10,6 +10,7 @@ import org.folio.holdingsiq.model.ProxyUrl;
 import org.folio.holdingsiq.model.Resource;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.UserDefinedFields;
+import org.folio.rest.converter.common.attr.VisibilityDetailsMapper;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.ProxyDto;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ResourceRequestConverter {
+
   public ResourcePut convertToRmApiResourcePutRequest(ResourcePutRequest entity, Resource oldResource) {
     ResourcePutDataAttributes attributes = entity.getData().getAttributes();
     //Map common attributes for custom/managed resources to RM API fields
@@ -47,7 +49,6 @@ public class ResourceRequestConverter {
     builder.isSelected(valueOrDefault(attributes.getIsSelected(), oldResource.getIsSelected()));
 
     convertProxy(builder, attributes.getProxy(), oldResource.getProxy());
-    convertHidden(attributes, builder);
     if (Boolean.TRUE == oldResource.getIsPackageCustom()) {
       builder.url(valueOrDefault(attributes.getUrl(), oldResource.getUrl()));
     }
@@ -66,17 +67,9 @@ public class ResourceRequestConverter {
     builder.isPeerReviewed(oldResource.getIsPeerReviewed());
 
     convertUserDefinedFields(attributes, builder, oldResource);
+    builder.visibilityDetails(VisibilityDetailsMapper.toRmApiVisibilityDetails(attributes.getVisibility()));
 
     return builder;
-  }
-
-  /**
-   * Sends visibility only when the request sets it; HoldingsIQ keeps the current visibility when it is omitted.
-   * The per-category visibility takes precedence over the single visibility flag.
-   */
-  private void convertHidden(ResourcePutDataAttributes attributes, ResourcePut.ResourcePutBuilder builder) {
-    var isHidden = attributes.getVisibilityData() != null ? attributes.getVisibilityData().getIsHidden() : null;
-    builder.visibilityDetails(ResourceVisibility.toVisibilityDetails(attributes.getVisibility(), isHidden));
   }
 
   private void convertProxy(ResourcePut.ResourcePutBuilder builder, @Nullable ProxyDto newProxy, ProxyUrl oldProxy) {

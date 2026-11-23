@@ -1,6 +1,6 @@
 package org.folio.rest.converter.packages;
 
-import static org.folio.rest.converter.packages.CommonPackagePutRequestConverter.HIDDEN_BY_CUSTOMER;
+import static org.folio.rest.converter.common.attr.VisibilityDetailsMapper.HIDDEN_BY_CUSTOMER;
 import static org.folio.util.PackagesTestUtil.getPackagePutRequest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

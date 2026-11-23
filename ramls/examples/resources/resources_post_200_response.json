@@ -43,10 +43,23 @@
       "url": null,
       "providerId": 123355,
       "providerName": "API DEV CORPORATE CUSTOMER",
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "FTF",
+          "hidden": false,
+          "reason": ""
+        },
+        {
+          "category": "MARC",
+          "hidden": false,
+          "reason": ""
+        }
+      ],
       "managedCoverages": [],
       "customCoverages": [],
       "proxy": {

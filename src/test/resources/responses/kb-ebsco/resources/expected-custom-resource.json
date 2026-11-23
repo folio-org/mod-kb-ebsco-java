@@ -40,10 +40,6 @@
       "url": "https://hello",
       "providerId": 123356,
       "providerName": "API DEV GOVERNMENT CUSTOMER",
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
       "managedCoverages": [],
       "customCoverages": [{
         "beginCoverage": "2018-01-10",

@@ -25,10 +25,23 @@
       "titleCount": 0,
       "vendorId": 123355,
       "vendorName": "API DEV CORPORATE CUSTOMER",
-      "visibilityData": {
-        "isHidden": true,
-        "reason": ""
-      },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": true,
+          "reason": "Hidden by Customer"
+        },
+        {
+          "category": "FTF",
+          "hidden": true,
+          "reason": "Hidden by Customer"
+        },
+        {
+          "category": "MARC",
+          "hidden": true,
+          "reason": "Hidden by Customer"
+        }
+      ],
       "allowKbToAddTitles": false,
       "packageToken": {
         "factName":"siteid",

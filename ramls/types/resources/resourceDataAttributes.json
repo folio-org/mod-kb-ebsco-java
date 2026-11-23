@@ -180,15 +180,10 @@
       "description": "Provider name",
       "example": "EBSCO"
     },
-    "visibilityData": {
-      "type": "object",
-      "description": "Visibility data. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
-      "$ref": "../visibilityData.json"
-    },
     "visibility": {
       "type": "array",
       "readonly": true,
-      "description": "Visibility per category (PF, FTF, MARC). visibilityData is hidden when at least one category is hidden",
+      "description": "Visibility per category (PF, FTF, MARC)",
       "items": {
         "type": "object",
         "$ref": "../visibility.json"

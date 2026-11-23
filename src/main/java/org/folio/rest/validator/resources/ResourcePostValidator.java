@@ -1,4 +1,4 @@
-package org.folio.rest.validator;
+package org.folio.rest.validator.resources;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -6,6 +6,7 @@ import org.folio.holdingsiq.model.PackageData;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ResourcePostDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePostRequest;
+import org.folio.rest.validator.ValidatorUtil;
 import org.springframework.stereotype.Component;
 
 @Component

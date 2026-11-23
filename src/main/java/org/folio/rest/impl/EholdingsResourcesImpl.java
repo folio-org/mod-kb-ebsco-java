@@ -66,9 +66,7 @@ import org.folio.rest.util.IdParser;
 import org.folio.rest.util.template.RmApiTemplate;
 import org.folio.rest.util.template.RmApiTemplateContext;
 import org.folio.rest.util.template.RmApiTemplateFactory;
-import org.folio.rest.validator.ResourcePostValidator;
-import org.folio.rest.validator.ResourcePutBodyValidator;
-import org.folio.rest.validator.ResourceTagsPutBodyValidator;
+import org.folio.rest.validator.resources.ResourceValidationService;
 import org.folio.rmapi.result.ObjectsForPostResourceResult;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.service.accesstypes.AccessTypeMappingsService;
@@ -89,17 +87,13 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @Autowired
   private ResourceRequestConverter converter;
   @Autowired
-  private ResourcePostValidator postValidator;
-  @Autowired
-  private ResourcePutBodyValidator resourcePutBodyValidator;
+  private ResourceValidationService validationService;
   @Autowired
   private RmApiTemplateFactory templateFactory;
   @Autowired
   private TagRepository tagRepository;
   @Autowired
   private ResourceRepository resourceRepository;
-  @Autowired
-  private ResourceTagsPutBodyValidator resourceTagsPutBodyValidator;
   @Autowired
   private AccessTypesService accessTypesService;
   @Autowired
@@ -118,7 +112,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @HandleValidationErrors
   public void postEholdingsResources(String contentType, ResourcePostRequest entity, Map<String, String> okapiHeaders,
                                      Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    postValidator.validate(entity);
+    validationService.validateResourcePostRequest(entity);
 
     ResourcePostDataAttributes attributes = entity.getData().getAttributes();
 
@@ -197,7 +191,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     userKbCredentialsService.findByUser(headers)
       .thenCompose(creds -> {
         ResourceTagsDataAttributes attributes = entity.getData().getAttributes();
-        resourceTagsPutBodyValidator.validate(entity, attributes);
+        validationService.validateResourceTagsPutRequest(entity, attributes);
         return updateResourceTags(createDbResource(resourceId, creds.getId(), attributes),
           new RequestContext(headers).getTenant())
           .thenAccept(ob -> asyncResultHandler.handle(
@@ -231,7 +225,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     return context -> getObjectsForPostResource(resourceId, context)
       .thenCompose(result -> {
         Title title = result.title();
-        postValidator.validateRelatedObjects(result.packageData(), result.titleInPackage());
+        validationService.validateResourcePostRelatedObjects(result.packageData(), result.titleInPackage());
         var postRequest =
           new ResourceSelectedPayload(true, title.getTitleName(), title.getPubType(), attributes.getUrl());
         return context.getResourcesService().postResource(postRequest, resourceId);
@@ -359,11 +353,11 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     return context.getResourcesService().retrieveResource(parsedResourceId)
       .thenCompose(resource -> {
         ResourcePut resourcePutBody;
-        boolean isTitleCustom = resource.getIsTitleCustom();
-        resourcePutBodyValidator.validate(entity, isTitleCustom);
-        if (isTitleCustom) {
+        if (Boolean.TRUE.equals(resource.getIsTitleCustom())) {
+          validationService.validateCustomResourcePutRequest(entity);
           resourcePutBody = converter.convertToRmApiCustomResourcePutRequest(entity, resource);
         } else {
+          validationService.validateManagedResourcePutRequest(entity);
           resourcePutBody = converter.convertToRmApiResourcePutRequest(entity, resource);
         }
         return context.getResourcesService().updateResource(parsedResourceId, resourcePutBody);

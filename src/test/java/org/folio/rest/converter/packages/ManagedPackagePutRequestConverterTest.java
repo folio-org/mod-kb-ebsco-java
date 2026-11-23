@@ -1,6 +1,6 @@
 package org.folio.rest.converter.packages;
 
-import static org.folio.rest.converter.packages.CommonPackagePutRequestConverter.HIDDEN_BY_CUSTOMER;
+import static org.folio.rest.converter.common.attr.VisibilityDetailsMapper.HIDDEN_BY_CUSTOMER;
 import static org.folio.util.PackagesTestUtil.getPackagePutRequest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -49,6 +49,20 @@ class ManagedPackagePutRequestConverterTest {
     var visibility = packagePut.getVisibilityDetails().getFirst();
     assertTrue(visibility.hidden());
     assertEquals(HIDDEN_BY_CUSTOMER, visibility.reason());
+  }
+
+  @Test
+  void shouldNotSendVisibilityWhenRequestDoesNotSetIt() {
+    var packagePut = converter.convert(getPackagePutRequest(
+      new PackagePutDataAttributes().withIsSelected(true)));
+    assertNull(packagePut.getVisibilityDetails());
+  }
+
+  @Test
+  void shouldNotSendVisibilityWhenRequestVisibilityIsEmpty() {
+    var packagePut = converter.convert(getPackagePutRequest(
+      new PackagePutDataAttributes().withIsSelected(true).withVisibility(List.of())));
+    assertNull(packagePut.getVisibilityDetails());
   }
 
   @Test

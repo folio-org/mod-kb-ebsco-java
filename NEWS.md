@@ -1,6 +1,7 @@
 ## v8.0.0 YYYY-mm-DD
 ### Breaking changes
 * Drop `visibilityData` field from packages request/response ([MODKBEKBJ-835](https://folio-org.atlassian.net/browse/MODKBEKBJ-835))
+* Drop `visibilityData` field from titles and resources endpoints, and `filter[name]`, `filter[isxn]`, `filter[subject]`, `filter[publisher]` query params from titles and package resources search ([MODKBEKBJ-872](https://folio-org.atlassian.net/browse/MODKBEKBJ-872))
 
 ### New APIs versions
 * Provides `eholdings v5.0`
@@ -11,7 +12,7 @@
 * Migrate Title and Resource Endpoints to HoldingsIQ v2 API ([MODKBEKBJ-830](https://folio-org.atlassian.net/browse/MODKBEKBJ-830))
 * Add filter[zdbid] and filter[access] to titles and package resources search ([MODKBEKBJ-834](https://folio-org.atlassian.net/browse/MODKBEKBJ-834))
 * Add visibility per category, packageType, isPrimaryPackage and isOrderedThroughEbsco to resources ([MODKBEKBJ-831](https://folio-org.atlassian.net/browse/MODKBEKBJ-831))
-* Support updating resource visibility per category (PF, FTF, MARC) with `visibility`, `visibilityData` remains as a fallback applied to all categories ([MODKBEKBJ-831](https://folio-org.atlassian.net/browse/MODKBEKBJ-831))
+* Support updating resource visibility per category (PF, FTF, MARC) with `visibility` ([MODKBEKBJ-831](https://folio-org.atlassian.net/browse/MODKBEKBJ-831))
 * Add additional fields to POST /eholdings/packages endpoint ([MODKBEKBJ-823](https://folio-org.atlassian.net/browse/MODKBEKBJ-823))
 * Update visibility hidden reason handling ([MODKBEKBJ-823](https://folio-org.atlassian.net/browse/MODKBEKBJ-823))
 * Remove HTML validation for package's custom display name field ([MODKBEKBJ-855](https://folio-org.atlassian.net/browse/MODKBEKBJ-855))

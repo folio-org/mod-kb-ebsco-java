@@ -9,9 +9,20 @@
         "endCoverage": "2003-12-01"
       },
       "isSelected": true,
-      "visibilityData": {
-        "isHidden": true
-      },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": true
+        },
+        {
+          "category": "FTF",
+          "hidden": true
+        },
+        {
+          "category": "MARC",
+          "hidden": true
+        }
+      ],
       "packageToken": {
         "value": "hellotoken"
       },
